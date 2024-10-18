@@ -2,7 +2,7 @@
 
 namespace KooliProjekt.Data
 {
-    public class food_chart
+    public class FoodChart
     {
         [Required]
         [StringLength(25)]
@@ -10,12 +10,12 @@ namespace KooliProjekt.Data
 
         [Required]
         public DateTime? InvoiceDate { get; set; }
-        public int food_chartID { get; set; }
+        public int FoodChartID { get; set; }
         public string user { get; set; }
         public String date { get; set; }
 
         public string meal { get; set; }
-        public DateTime nutrients  { get; set; }
+        public DateTime nutrients { get; set; }
         public float amount { get; set; }
 
     }

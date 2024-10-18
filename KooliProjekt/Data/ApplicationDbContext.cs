@@ -12,7 +12,7 @@ namespace KooliProjekt.Data
         {
         }
         public DbSet<User> User { get; set; }
-        public DbSet<food_chart> food_Chart { get; set; }
+        public DbSet<FoodChart> food_Chart { get; set; }
         public DbSet<Nutrients> nutrients { get; set; }
         public DbSet<HealthData> health_data { get; set; }
         public DbSet<Amount> amount { get; set; }

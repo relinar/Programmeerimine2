@@ -1,0 +1,59 @@
+﻿@model IEnumerable<KooliProjekt.Data.Nutrients>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Carbohydrates)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Sugars)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Fats)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FoodChart)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Carbohydrates)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Sugars)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Fats)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FoodChart)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.NutrientsID">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.NutrientsID">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.NutrientsID">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
