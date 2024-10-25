@@ -19,9 +19,9 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: HealthDatas
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            return View(await _context.health_data.ToListAsync());
+            return View(await _context.health_data.GetPagedAsync(page, 5));
         }
 
         // GET: HealthDatas/Details/5
@@ -33,7 +33,7 @@ namespace KooliProjekt.Controllers
             }
 
             var healthData = await _context.health_data
-                .FirstOrDefaultAsync(m => m.HealthDataID == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (healthData == null)
             {
                 return NotFound();
@@ -87,7 +87,7 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("HealthDataID,User,Date,BloodSugar,Weight,BloodAir,Systolic,Diastolic,Pulse")] HealthData healthData)
         {
-            if (id != healthData.HealthDataID)
+            if (id != healthData.Id)
             {
                 return NotFound();
             }
@@ -101,7 +101,7 @@ namespace KooliProjekt.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!HealthDataExists(healthData.HealthDataID))
+                    if (!HealthDataExists(healthData.Id))
                     {
                         return NotFound();
                     }
@@ -124,7 +124,7 @@ namespace KooliProjekt.Controllers
             }
 
             var healthData = await _context.health_data
-                .FirstOrDefaultAsync(m => m.HealthDataID == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (healthData == null)
             {
                 return NotFound();
@@ -150,7 +150,7 @@ namespace KooliProjekt.Controllers
 
         private bool HealthDataExists(int id)
         {
-            return _context.health_data.Any(e => e.HealthDataID == id);
+            return _context.health_data.Any(e => e.Id == id);
         }
     }
 }

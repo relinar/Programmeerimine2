@@ -9,22 +9,22 @@ using KooliProjekt.Data;
 
 namespace KooliProjekt.Controllers
 {
-    public class NutrientsController : Controller
+    public class FoodChartsController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public NutrientsController(ApplicationDbContext context)
+        public FoodChartsController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Nutrients
+        // GET: food_chart
         public async Task<IActionResult> Index(int page = 1)
         {
-            return View(await _context.nutrients.GetPagedAsync(page, 5));
+            return View(await _context.food_Chart.GetPagedAsync(page, 5));
         }
 
-        // GET: Nutrients/Details/5
+        // GET: food_chart/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -32,39 +32,39 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var nutrients = await _context.nutrients
+            var food_chart = await _context.food_Chart
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (nutrients == null)
+            if (food_chart == null)
             {
                 return NotFound();
             }
 
-            return View(nutrients);
+            return View(food_chart);
         }
 
-        // GET: Nutrients/Create
+        // GET: food_chart/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Nutrients/Create
+        // POST: food_chart/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("NutrientsID,Name,Carbohydrates,Sugars,Fats,FoodChart")] Nutrients nutrients)
+        public async Task<IActionResult> Create([Bind("Id,InvoiceNo,InvoiceDate,user,date,meal,nutrients,amount")] FoodChart food_chart)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(nutrients);
+                _context.Add(food_chart);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(nutrients);
+            return View(food_chart);
         }
 
-        // GET: Nutrients/Edit/5
+        // GET: food_chart/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -72,22 +72,22 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var nutrients = await _context.nutrients.FindAsync(id);
-            if (nutrients == null)
+            var food_chart = await _context.food_Chart.FindAsync(id);
+            if (food_chart == null)
             {
                 return NotFound();
             }
-            return View(nutrients);
+            return View(food_chart);
         }
 
-        // POST: Nutrients/Edit/5
+        // POST: food_chart/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("NutrientsID,Name,Carbohydrates,Sugars,Fats,FoodChart")] Nutrients nutrients)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,InvoiceNo,InvoiceDate,user,date,meal,nutrients,amount")] FoodChart food_chart)
         {
-            if (id != nutrients.Id)
+            if (id != food_chart.Id)
             {
                 return NotFound();
             }
@@ -96,12 +96,12 @@ namespace KooliProjekt.Controllers
             {
                 try
                 {
-                    _context.Update(nutrients);
+                    _context.Update(food_chart);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!NutrientsExists(nutrients.Id))
+                    if (!food_chartExists(food_chart.Id))
                     {
                         return NotFound();
                     }
@@ -112,10 +112,10 @@ namespace KooliProjekt.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(nutrients);
+            return View(food_chart);
         }
 
-        // GET: Nutrients/Delete/5
+        // GET: food_chart/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -123,34 +123,34 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var nutrients = await _context.nutrients
+            var food_chart = await _context.food_Chart
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (nutrients == null)
+            if (food_chart == null)
             {
                 return NotFound();
             }
 
-            return View(nutrients);
+            return View(food_chart);
         }
 
-        // POST: Nutrients/Delete/5
+        // POST: food_chart/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var nutrients = await _context.nutrients.FindAsync(id);
-            if (nutrients != null)
+            var food_chart = await _context.food_Chart.FindAsync(id);
+            if (food_chart != null)
             {
-                _context.nutrients.Remove(nutrients);
+                _context.food_Chart.Remove(food_chart);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool NutrientsExists(int id)
+        private bool food_chartExists(int id)
         {
-            return _context.nutrients.Any(e => e.Id == id);
+            return _context.food_Chart.Any(e => e.Id == id);
         }
     }
 }

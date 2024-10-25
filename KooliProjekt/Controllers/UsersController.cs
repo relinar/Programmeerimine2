@@ -19,9 +19,9 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: Users
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            return View(await _context.User.ToListAsync());
+            return View(await _context.User.GetPagedAsync(page, 5));
         }
 
         // GET: Users/Details/5
@@ -33,7 +33,7 @@ namespace KooliProjekt.Controllers
             }
 
             var user = await _context.User
-                .FirstOrDefaultAsync(m => m.UserID == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (user == null)
             {
                 return NotFound();
@@ -87,7 +87,7 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("UserID,Name,Role,DailySummary,Meal")] User user)
         {
-            if (id != user.UserID)
+            if (id != user.Id)
             {
                 return NotFound();
             }
@@ -101,7 +101,7 @@ namespace KooliProjekt.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!UserExists(user.UserID))
+                    if (!UserExists(user.Id))
                     {
                         return NotFound();
                     }
@@ -124,7 +124,7 @@ namespace KooliProjekt.Controllers
             }
 
             var user = await _context.User
-                .FirstOrDefaultAsync(m => m.UserID == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (user == null)
             {
                 return NotFound();
@@ -150,7 +150,7 @@ namespace KooliProjekt.Controllers
 
         private bool UserExists(int id)
         {
-            return _context.User.Any(e => e.UserID == id);
+            return _context.User.Any(e => e.Id == id);
         }
     }
 }

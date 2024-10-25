@@ -15,7 +15,7 @@ namespace KooliProjekt.Data
 
     public class Nutrients
     {
-        public int NutrientsID { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public float Carbohydrates { get; set; }
         public float Sugars { get; set; }
