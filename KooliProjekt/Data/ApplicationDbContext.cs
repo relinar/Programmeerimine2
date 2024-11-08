@@ -16,19 +16,6 @@ namespace KooliProjekt.Data
         public DbSet<Nutrients> nutrients { get; set; }
         public DbSet<HealthData> health_data { get; set; }
         public DbSet<Amount> amount { get; set; }
-
-        public DbSet<TodoList> TodoLists { get; set; }
-        public DbSet<TodoItem> TodoItems { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<TodoList>()
-                .HasMany(t => t.Items)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-        }
     }
   
     
