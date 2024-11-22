@@ -6,22 +6,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
+using KooliProjekt.Services;
 
 namespace KooliProjekt.Controllers
 {
     public class FoodChartsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext FoodChartService;
 
         public FoodChartsController(ApplicationDbContext context)
         {
-            _context = context;
+            FoodChartService = context;
         }
 
         // GET: food_chart
         public async Task<IActionResult> Index(int page = 1)
         {
-            return View(await _context.food_Chart.GetPagedAsync(page, 5));
+            return View(await FoodChartService.food_Chart.GetPagedAsync(page, 5));
         }
 
         // GET: food_chart/Details/5
@@ -32,7 +33,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var food_chart = await _context.food_Chart
+            var food_chart = await FoodChartService.food_Chart
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (food_chart == null)
             {
@@ -57,8 +58,8 @@ namespace KooliProjekt.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(food_chart);
-                await _context.SaveChangesAsync();
+                FoodChartService.Add(food_chart);
+                await FoodChartService.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(food_chart);
@@ -72,7 +73,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var food_chart = await _context.food_Chart.FindAsync(id);
+            var food_chart = await FoodChartService.food_Chart.FindAsync(id);
             if (food_chart == null)
             {
                 return NotFound();
@@ -96,8 +97,8 @@ namespace KooliProjekt.Controllers
             {
                 try
                 {
-                    _context.Update(food_chart);
-                    await _context.SaveChangesAsync();
+                    FoodChartService.Update(food_chart);
+                    await FoodChartService.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -123,7 +124,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var food_chart = await _context.food_Chart
+            var food_chart = await FoodChartService.food_Chart
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (food_chart == null)
             {
@@ -138,19 +139,19 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var food_chart = await _context.food_Chart.FindAsync(id);
+            var food_chart = await FoodChartService.food_Chart.FindAsync(id);
             if (food_chart != null)
             {
-                _context.food_Chart.Remove(food_chart);
+                FoodChartService.food_Chart.Remove(food_chart);
             }
 
-            await _context.SaveChangesAsync();
+            await FoodChartService.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool food_chartExists(int id)
         {
-            return _context.food_Chart.Any(e => e.Id == id);
+            return FoodChartService.food_Chart.Any(e => e.Id == id);
         }
     }
 }

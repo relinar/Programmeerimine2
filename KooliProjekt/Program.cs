@@ -53,7 +53,7 @@ namespace KooliProjekt
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                    dbContext.Database.Migrate();
+                    dbContext.Database.EnsureCreated();
 
                     SeedData.Generate(dbContext);
                 }

@@ -11,17 +11,17 @@ namespace KooliProjekt.Controllers
 {
     public class AmountsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext amountService;
 
         public AmountsController(ApplicationDbContext context)
         {
-            _context = context;
+            amountService = context;
         }
 
         // GET: Amounts
         public async Task<IActionResult> Index(int page = 1)
         {
-            return View(await _context.amount.GetPagedAsync(page, 5));
+            return View(await amountService.amount.GetPagedAsync(page, 5));
         }
 
         // GET: Amounts/Details/5
@@ -32,7 +32,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var amount = await _context.amount
+            var amount = await amountService.amount
                 .FirstOrDefaultAsync(m => m.AmountID == id);
             if (amount == null)
             {
@@ -57,8 +57,8 @@ namespace KooliProjekt.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(amount);
-                await _context.SaveChangesAsync();
+                amountService.Add(amount);
+                await amountService.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(amount);
@@ -72,7 +72,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var amount = await _context.amount.FindAsync(id);
+            var amount = await amountService.amount.FindAsync(id);
             if (amount == null)
             {
                 return NotFound();
@@ -96,8 +96,8 @@ namespace KooliProjekt.Controllers
             {
                 try
                 {
-                    _context.Update(amount);
-                    await _context.SaveChangesAsync();
+                    amountService.Update(amount);
+                    await amountService.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -123,7 +123,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var amount = await _context.amount
+            var amount = await amountService.amount
                 .FirstOrDefaultAsync(m => m.AmountID == id);
             if (amount == null)
             {
@@ -138,19 +138,19 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var amount = await _context.amount.FindAsync(id);
+            var amount = await amountService.amount.FindAsync(id);
             if (amount != null)
             {
-                _context.amount.Remove(amount);
+                amountService.amount.Remove(amount);
             }
 
-            await _context.SaveChangesAsync();
+            await amountService.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool AmountExists(int id)
         {
-            return _context.amount.Any(e => e.AmountID == id);
+            return amountService.amount.Any(e => e.AmountID == id);
         }
     }
 }
