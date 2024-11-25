@@ -1,54 +1,61 @@
 ﻿using KooliProjekt.Data;
-using Microsoft.EntityFrameworkCore;
+using KooliProjekt.Data.Repositories;
 using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
 {
     public class FoodChartService : IFoodChartService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public FoodChartService(ApplicationDbContext context)
+        public FoodChartService(IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
-        // Implementing List method (pagination)
+        // Implement the List method from IFoodChartService interface
         public async Task<PagedResult<FoodChart>> List(int page, int pageSize)
         {
-            // Assuming GetPagedAsync is an extension method for paginated results
-            return await _context.food_Chart.GetPagedAsync(page, pageSize);
+            // Get paged data from the repository
+            var pagedData = await _unitOfWork.FoodCharts.GetPagedAsync(page, pageSize);
+
+            // Create and return the PagedResult object
+            return new PagedResult<FoodChart>
+            {
+                Results = pagedData.Results,    // List of FoodCharts
+                RowCount = pagedData.RowCount,  // Total number of items in the database
+                CurrentPage = pagedData.CurrentPage, // Current page number
+                PageSize = pagedData.PageSize, // Size of each page
+                PageCount = pagedData.PageCount // Total number of pages
+            };
         }
 
-        // Implementing Get method
         public async Task<FoodChart> Get(int id)
         {
-            return await _context.food_Chart.FirstOrDefaultAsync(m => m.Id == id);
+            return await _unitOfWork.FoodCharts.GetByIdAsync(id);
         }
 
-        // Implementing Save method
-        public async Task Save(FoodChart list)
+        public async Task Save(FoodChart foodChart)
         {
-            if (list.Id == 0)
+            if (foodChart.Id == 0)
             {
-                _context.Add(list);
+                await _unitOfWork.FoodCharts.AddAsync(foodChart);
             }
             else
             {
-                _context.Update(list);
+                await _unitOfWork.FoodCharts.UpdateAsync(foodChart);
             }
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.CommitAsync();
         }
 
-        // Implementing Delete method
         public async Task Delete(int id)
         {
-            var foodChart = await _context.food_Chart.FindAsync(id);
+            var foodChart = await _unitOfWork.FoodCharts.GetByIdAsync(id);
             if (foodChart != null)
             {
-                _context.food_Chart.Remove(foodChart);
-                await _context.SaveChangesAsync();
+                await _unitOfWork.FoodCharts.RemoveAsync(foodChart);
+                await _unitOfWork.CommitAsync();
             }
             else
             {
