@@ -1,12 +1,11 @@
-﻿// BaseRepository.cs
-using KooliProjekt.Data;
+﻿using KooliProjekt.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace KooliProjekt.Data.Repositories
 {
-    public class BaseRepository<T> : IGenericRepository<T> where T : class
+    public class BaseRepository<T> where T : Entity
     {
         protected readonly ApplicationDbContext _context;
 
@@ -15,69 +14,35 @@ namespace KooliProjekt.Data.Repositories
             _context = context;
         }
 
-        public async Task<List<T>> GetAllAsync()
+        public virtual async Task Delete(int id)
         {
-            return await _context.Set<T>().ToListAsync();
+            await _context.Set<T>()
+                .Where(e => e.Id == id)
+                .ExecuteDeleteAsync();
         }
 
-        public async Task<T> GetByIdAsync(int id)
+        public virtual async Task<T> Get(int id)
         {
             return await _context.Set<T>().FindAsync(id);
         }
 
-        public async Task AddAsync(T entity)
+        public virtual async Task<PagedResult<T>> List(int page, int pageSize)
         {
-            await _context.Set<T>().AddAsync(entity);
+            return await _context.Set<T>().GetPagedAsync(page, pageSize);
         }
 
-        public async Task UpdateAsync(T entity)
+        public virtual async Task Save(T entity)
         {
-            _context.Set<T>().Update(entity);
-        }
+            if(entity.Id == 0)
+            {
+                _context.Add(entity);
+            }
+            else
+            {                 
+                _context.Update(entity);
+            }
 
-        public async Task RemoveAsync(T entity)
-        {
-            _context.Set<T>().Remove(entity); // <-- Implement RemoveAsync
-        }
-
-        public Task<List<FoodChart>> GetPagedAsync(int page, int pageSize)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<List<T>> IGenericRepository<T>.GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<T> IGenericRepository<T>.GetByIdAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task IGenericRepository<T>.AddAsync(T entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task IGenericRepository<T>.UpdateAsync(T entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task IGenericRepository<T>.RemoveAsync(T entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<List<FoodChart>> IGenericRepository<T>.GetPagedAsync(int page, int pageSize)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<int> IGenericRepository<T>.GetTotalCountAsync()
-        {
-            throw new NotImplementedException();
+            await _context.SaveChangesAsync();
         }
     }
 }

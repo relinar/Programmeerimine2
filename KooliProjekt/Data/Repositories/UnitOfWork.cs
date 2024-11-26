@@ -7,13 +7,14 @@ namespace KooliProjekt.Data.Repositories
     {
         private readonly ApplicationDbContext _context;
 
-        public UnitOfWork(ApplicationDbContext context)
+        public UnitOfWork(ApplicationDbContext context,
+                          IFoodChartRepository foodChartRepository)
         {
             _context = context;
-            FoodCharts = new FoodChartRepository(_context);
+            FoodCharts = foodChartRepository;
         }
 
-        public IGenericRepository<FoodChart> FoodCharts { get; }
+        public IFoodChartRepository FoodCharts { get; }
 
         public async Task CommitAsync()
         {

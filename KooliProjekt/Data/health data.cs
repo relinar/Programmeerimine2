@@ -1,8 +1,7 @@
 ﻿namespace KooliProjekt.Data
 {
-    public class HealthData
+    public class HealthData : Entity
     {
-        public int Id { get; set; }  // Primaarvõti
         public int UserId { get; set; }  // Viide kasutajale (võõrvõti)
         public string User { get; set; } // Kasutaja nimi
         public string Date { get; set; } // Kuupäev või muu määratlus (näiteks mõõtmise kuupäev)

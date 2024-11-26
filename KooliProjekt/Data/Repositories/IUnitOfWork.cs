@@ -5,7 +5,7 @@ namespace KooliProjekt.Data.Repositories
 {
     public interface IUnitOfWork
     {
-        IGenericRepository<FoodChart> FoodCharts { get; }
+        IFoodChartRepository FoodCharts { get; }
         Task CommitAsync();
     }
 }

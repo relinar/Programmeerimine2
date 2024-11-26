@@ -13,54 +13,26 @@ namespace KooliProjekt.Services
             _unitOfWork = unitOfWork;
         }
 
-        // Implement the List method from IFoodChartService interface
         public async Task<PagedResult<FoodChart>> List(int page, int pageSize)
         {
-            // Get paged data from the repository
-            var pagedData = await _unitOfWork.FoodCharts.GetPagedAsync(page, pageSize);
+            var results = await _unitOfWork.FoodCharts.List(page, pageSize);
 
-            // Create and return the PagedResult object
-            return new PagedResult<FoodChart>
-            {
-                Results = pagedData.Results,    // List of FoodCharts
-                RowCount = pagedData.RowCount,  // Total number of items in the database
-                CurrentPage = pagedData.CurrentPage, // Current page number
-                PageSize = pagedData.PageSize, // Size of each page
-                PageCount = pagedData.PageCount // Total number of pages
-            };
+            return results;
         }
 
         public async Task<FoodChart> Get(int id)
         {
-            return await _unitOfWork.FoodCharts.GetByIdAsync(id);
+            return await _unitOfWork.FoodCharts.Get(id);
         }
 
         public async Task Save(FoodChart foodChart)
         {
-            if (foodChart.Id == 0)
-            {
-                await _unitOfWork.FoodCharts.AddAsync(foodChart);
-            }
-            else
-            {
-                await _unitOfWork.FoodCharts.UpdateAsync(foodChart);
-            }
-
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.FoodCharts.Save(foodChart);
         }
 
         public async Task Delete(int id)
         {
-            var foodChart = await _unitOfWork.FoodCharts.GetByIdAsync(id);
-            if (foodChart != null)
-            {
-                await _unitOfWork.FoodCharts.RemoveAsync(foodChart);
-                await _unitOfWork.CommitAsync();
-            }
-            else
-            {
-                throw new KeyNotFoundException($"FoodChart with id {id} not found.");
-            }
+            await _unitOfWork.FoodCharts.Delete(id);
         }
     }
 }

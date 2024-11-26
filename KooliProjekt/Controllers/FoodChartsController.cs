@@ -1,28 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using KooliProjekt.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using KooliProjekt.Data;
-using KooliProjekt.Services;
 
 namespace KooliProjekt.Controllers
 {
     public class FoodChartsController : Controller
     {
-        private readonly ApplicationDbContext FoodChartService;
+        private readonly IFoodChartService _foodChartService;
 
-        public FoodChartsController(ApplicationDbContext context)
+        public FoodChartsController(IFoodChartService foodChartService)
         {
-            FoodChartService = context;
+            _foodChartService = foodChartService;
         }
 
         // GET: food_chart
         public async Task<IActionResult> Index(int page = 1)
         {
-            return View(await FoodChartService.food_Chart.GetPagedAsync(page, 5));
+            var model = await _foodChartService.List(page, 5);
+
+            return View(model);
         }
 
         // GET: food_chart/Details/5
@@ -33,8 +28,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var food_chart = await FoodChartService.food_Chart
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var food_chart = await _foodChartService.Get(id.Value);
             if (food_chart == null)
             {
                 return NotFound();
@@ -58,8 +52,7 @@ namespace KooliProjekt.Controllers
         {
             if (ModelState.IsValid)
             {
-                FoodChartService.Add(food_chart);
-                await FoodChartService.SaveChangesAsync();
+                await _foodChartService.Save(food_chart);
                 return RedirectToAction(nameof(Index));
             }
             return View(food_chart);
@@ -73,7 +66,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var food_chart = await FoodChartService.food_Chart.FindAsync(id);
+            var food_chart = await _foodChartService.Get(id.Value);
             if (food_chart == null)
             {
                 return NotFound();
@@ -95,24 +88,10 @@ namespace KooliProjekt.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    FoodChartService.Update(food_chart);
-                    await FoodChartService.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!food_chartExists(food_chart.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                await _foodChartService.Save(food_chart);
                 return RedirectToAction(nameof(Index));
             }
+
             return View(food_chart);
         }
 
@@ -124,8 +103,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var food_chart = await FoodChartService.food_Chart
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var food_chart = await _foodChartService.Get(id.Value);
             if (food_chart == null)
             {
                 return NotFound();
@@ -139,19 +117,9 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var food_chart = await FoodChartService.food_Chart.FindAsync(id);
-            if (food_chart != null)
-            {
-                FoodChartService.food_Chart.Remove(food_chart);
-            }
+            await _foodChartService.Delete(id);
 
-            await FoodChartService.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool food_chartExists(int id)
-        {
-            return FoodChartService.food_Chart.Any(e => e.Id == id);
         }
     }
 }

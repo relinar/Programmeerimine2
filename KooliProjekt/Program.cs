@@ -19,6 +19,7 @@ namespace KooliProjekt
 
             // Add UnitOfWork and FoodChartService to DI container
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IFoodChartRepository, FoodChartRepository>();
             builder.Services.AddScoped<IFoodChartService, FoodChartService>();
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();

@@ -13,9 +13,8 @@ namespace KooliProjekt.Data
         public DateTime? InvoiceDate { get; set; }
     }
 
-    public class Nutrients
+    public class Nutrients : Entity
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public float Carbohydrates { get; set; }
         public float Sugars { get; set; }

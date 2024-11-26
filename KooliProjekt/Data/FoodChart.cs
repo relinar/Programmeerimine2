@@ -2,10 +2,8 @@
 
 namespace KooliProjekt.Data
 {
-    public class FoodChart
+    public class FoodChart : Entity
     {
-        public int Id { get; set; }
-
         [Required]
         [StringLength(25)]
         public string InvoiceNo { get; set; }
