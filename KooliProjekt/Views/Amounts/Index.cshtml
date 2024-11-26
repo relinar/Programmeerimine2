@@ -1,4 +1,4 @@
-﻿@model PagedResult<KooliProjekt.Data.Amount>
+﻿@model amountIndexModel
 
 @{
     ViewData["Title"] = "Index";
@@ -22,21 +22,19 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Results) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.NutrientsID)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AmountDate)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.AmountID">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.AmountID">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.AmountID">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.NutrientsID)</td>
+                <td>@Html.DisplayFor(modelItem => item.AmountDate)</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.AmountID">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.AmountID">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.AmountID">Delete</a>
+                </td>
+            </tr>
+        }
+
     </tbody>
 </table>
 
