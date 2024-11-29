@@ -21,6 +21,7 @@ namespace KooliProjekt
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IFoodChartRepository, FoodChartRepository>();
             builder.Services.AddScoped<IFoodChartService, FoodChartService>();
+            builder.Services.AddScoped<IUserService, UserService>();
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)

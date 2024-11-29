@@ -7,35 +7,53 @@
 <h1>Index</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
+
+<!-- Search Form -->
+<form method="get">
+    <div class="form-group">
+        <label class="control-label">Search Name</label>
+        <input asp-for="Search.Name" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label class="control-label">Search Role</label>
+        <input asp-for="Search.Role" class="form-control" />
+    </div>
+    <div class="form-group">
+        <button class="btn btn-primary">Search</button>
+        <a asp-controller="Users" asp-action="Index" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
+
+<!-- Users Table -->
 <table class="table">
     <thead>
         <tr>
-            <th>
-                NutrientsID
-            </th>
-            <th>
-                AmountDate
-            </th>
-            <th></th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Daily Summary</th>
+            <th>Meal</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Items)
+        @foreach (var item in Model.Data.Results)
         {
             <tr>
-                <td>@Html.DisplayFor(modelItem => item.NutrientsID)</td>
-                <td>@Html.DisplayFor(modelItem => item.AmountDate)</td>
+                <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                <td>@Html.DisplayFor(modelItem => item.Role)</td>
+                <td>@Html.DisplayFor(modelItem => item.DailySummary)</td>
+                <td>@Html.DisplayFor(modelItem => item.Meal)</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.AmountID">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.AmountID">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.AmountID">Delete</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                 </td>
             </tr>
         }
-
     </tbody>
 </table>
 
-@(await Component.InvokeAsync<PagerViewComponent>(Model))
+<!-- Pager Component for Pagination -->
+@(await Component.InvokeAsync<PagerViewComponent>(Model.Data))

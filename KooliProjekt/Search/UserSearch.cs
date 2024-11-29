@@ -1,6 +1,6 @@
 ﻿namespace KooliProjekt.Search
 {
-    public class amountSearch
+    public class UserSearch
     {
         public string Name { get; set; }
         public string Role { get; set; }

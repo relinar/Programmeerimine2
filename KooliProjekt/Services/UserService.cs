@@ -1,5 +1,7 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Search;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
@@ -14,11 +16,24 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        // Method to list users with pagination
-        public async Task<PagedResult<User>> List(int page, int pageSize)
+        // Method to list users with pagination and search functionality
+        public async Task<PagedResult<User>> List(int page, int pageSize, UserSearch search)
         {
-            // Assuming you have a custom extension method GetPagedAsync for pagination
-            return await _context.User.GetPagedAsync(page, pageSize); // Adjusted to Users DbSet
+            var query = _context.User.AsQueryable();
+
+            if (search != null)
+            {
+                if (!string.IsNullOrEmpty(search.Name))
+                {
+                    query = query.Where(u => u.Name.Contains(search.Name));
+                }
+                if (!string.IsNullOrEmpty(search.Role))
+                {
+                    query = query.Where(u => u.Role.Contains(search.Role));
+                }
+            }
+
+            return await query.GetPagedAsync(page, pageSize);
         }
 
         // Method to get a single user by id

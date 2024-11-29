@@ -1,13 +1,14 @@
-﻿using KooliProjekt.Data;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using KooliProjekt.Models;
+using KooliProjekt.Data;
 
 namespace KooliProjekt.Components
 {
     public class PagerViewComponent : ViewComponent
     {
-        public Task<IViewComponentResult> InvokeAsync(PagedResultBase result)
+        public IViewComponentResult Invoke(PagedResultBase model)
         {
-            return Task.FromResult((IViewComponentResult)View("Default", result));
+            return View(model);
         }
     }
 }
