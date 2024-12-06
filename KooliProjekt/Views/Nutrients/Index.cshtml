@@ -1,60 +1,69 @@
-﻿@model PagedResult<KooliProjekt.Data.Nutrients>
+﻿@model KooliProjekt.Models.NutrientsIndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Nutrients";
 }
 
-<h1>Index</h1>
+<h1>Nutrients</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
+
+<!-- Nutrients Search Form -->
+<form method="get">
+    <div class="form-group">
+        <label class="control-label">Name</label>
+        <input type="text" asp-for="Search.Name" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label class="control-label">Carbohydrates</label>
+        <input type="text" asp-for="Search.Carbohydrates" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label class="control-label">Sugars</label>
+        <input type="text" asp-for="Search.Sugars" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label class="control-label">Fats</label>
+        <input type="text" asp-for="Search.Fats" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <button class="btn btn-primary">Search</button>
+        <a asp-action="Index" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
+
+<!-- Nutrients Table -->
 <table class="table">
     <thead>
         <tr>
-            <th>
-                Name
-            </th>
-            <th>
-                Carbohydrates
-            </th>
-            <th>
-                Sugars
-            </th>
-            <th>
-                Fats
-            </th>
-            <th>
-                FoodChart
-            </th>
-            <th></th>
+            <th>Name</th>
+            <th>Carbohydrates</th>
+            <th>Sugars</th>
+            <th>Fats</th>
+            <th>Food Chart</th> <!-- Food Chart Column -->
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Results)
+        @foreach (var item in Model.Data.Results)
         {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Carbohydrates)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Sugars)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Fats)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FoodChart)
-            </td>
-            <td>
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                <td>@Html.DisplayFor(modelItem => item.Carbohydrates)</td>
+                <td>@Html.DisplayFor(modelItem => item.Sugars)</td>
+                <td>@Html.DisplayFor(modelItem => item.Fats)</td>
+                <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
                     <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+
+<!-- Pager View (if you have pagination) -->
+@(await Component.InvokeAsync<PagerViewComponent>(Model.Data))

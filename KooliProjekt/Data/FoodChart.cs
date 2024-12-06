@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// File: Models/FoodChart.cs
+using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace KooliProjekt.Data
 {
@@ -10,12 +12,11 @@ namespace KooliProjekt.Data
 
         [Required]
         public DateTime? InvoiceDate { get; set; }
-        public string user { get; set; }
-        public String date { get; set; }
 
+        public string user { get; set; } // 'user' is lowercase here
+        public string date { get; set; }
         public string meal { get; set; }
         public DateTime nutrients { get; set; }
         public float amount { get; set; }
-
     }
 }

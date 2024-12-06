@@ -1,9 +1,15 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-public interface IFoodChartService
+namespace KooliProjekt.Services
 {
-    Task<PagedResult<FoodChart>> List(int page, int pageSize);
-    Task<FoodChart> Get(int id);
-    Task Save(FoodChart foodChart);
-    Task Delete(int id);
+    public interface IFoodChartService
+    {
+        Task<PagedResult<FoodChart>> List(int page, int pageSize, FoodChartSearch search);
+        Task<FoodChart> Get(int id);
+        Task Save(FoodChart foodChart);
+        Task Delete(int id);
+    }
 }

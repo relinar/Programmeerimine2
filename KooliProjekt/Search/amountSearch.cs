@@ -1,10 +1,9 @@
-﻿namespace KooliProjekt.Search
+﻿namespace KooliProjekt.Models
 {
     public class amountSearch
     {
-        public string Name { get; set; }
-        public string Role { get; set; }
+        public int? AmountID { get; set; }
+        public int? NutrientsID { get; set; }
+        public DateTime? AmountDate { get; set; }
     }
 }
-
-

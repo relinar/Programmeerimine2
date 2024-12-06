@@ -1,4 +1,5 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
 using System.Threading.Tasks;
 
 namespace KooliProjekt.Services

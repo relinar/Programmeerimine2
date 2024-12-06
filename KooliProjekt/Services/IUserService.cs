@@ -1,4 +1,5 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
 using KooliProjekt.Search;
 using System.Threading.Tasks;
 

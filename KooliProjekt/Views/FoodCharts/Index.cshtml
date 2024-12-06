@@ -1,73 +1,73 @@
-﻿@model PagedResult<KooliProjekt.Data.FoodChart>
+﻿@model KooliProjekt.Models.FoodChartIndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Food Charts";
 }
 
-<h1>Index</h1>
+<h1>Food Charts</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
+
+<!-- Search Form -->
+<form method="get">
+    <div class="form-group">
+        <label class="control-label">Invoice No</label>
+        <input type="text" asp-for="Search.InvoiceNo" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label class="control-label">User</label>
+        <input type="text" asp-for="Search.user" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label class="control-label">Meal</label>
+        <input type="text" asp-for="Search.meal" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label class="control-label">Date</label>
+        <input type="date" asp-for="Search.date" class="form-control"  />
+    </div>
+    <div class="form-group">
+        <button class="btn btn-primary">Search</button>
+        <a asp-action="Index" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
+
+<!-- Food Chart Table -->
 <table class="table">
     <thead>
         <tr>
-            <th>
-                InvoiceNo
-            </th>
-            <th>
-                InvoiceDate
-            </th>
-            <th>
-                user
-            </th>
-            <th>
-                date
-            </th>
-            <th>
-                meal
-            </th>
-            <th>
-                nutrients
-            </th>
-            <th>
-                amount
-            </th>
-            <th></th>
+            <th>Invoice No</th>
+            <th>Invoice Date</th>
+            <th>User</th>
+            <th>Date</th>
+            <th>Meal</th>
+            <th>Nutrients</th>
+            <th>Amount</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Results) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.InvoiceNo)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.InvoiceDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.user)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.date)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.meal)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.nutrients)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.amount)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model.Data.Results)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.InvoiceNo)</td>
+                <td>@Html.DisplayFor(modelItem => item.InvoiceDate)</td>
+                <td>@Html.DisplayFor(modelItem => item.user)</td>
+                <td>@Html.DisplayFor(modelItem => item.date)</td>
+                <td>@Html.DisplayFor(modelItem => item.meal)</td>
+                <td>@Html.DisplayFor(modelItem => item.nutrients)</td>
+                <td>@Html.DisplayFor(modelItem => item.amount)</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
 
-@(await Component.InvokeAsync<PagerViewComponent>(Model))
+<!-- Pager View (if you have pagination) -->
+@(await Component.InvokeAsync<PagerViewComponent>(Model.Data))

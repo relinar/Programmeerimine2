@@ -3,31 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
 using KooliProjekt.Services;
-using KooliProjekt.Search;
 using KooliProjekt.Models;
 
 namespace KooliProjekt.Controllers
 {
     public class UsersController : Controller
     {
-        private readonly IUserService _userService;
+        private readonly IUserService _userService;  // Keep this as IUserService
 
         // Constructor to inject the IUserService
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService)  // Change to inject IUserService
         {
-            _userService = userService;
+            _userService = userService;  // Correct assignment
         }
 
         // GET: Users
         public async Task<IActionResult> Index(int page = 1, UserIndexModel model = null)
         {
             model = model ?? new UserIndexModel();
-            model.Data = await _userService.List(page, 5, model.Search);
-
+            model.Data = await _userService.List(page, 5, model.Search);  // Use IUserService's List method
 
             return View(model);
         }
@@ -39,7 +35,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var user = await _userService.Get(id.Value);
+            var user = await _userService.Get(id.Value);  // Use IUserService's Get method
             if (user == null)
             {
                 return NotFound();
@@ -55,16 +51,13 @@ namespace KooliProjekt.Controllers
         }
 
         // POST: TodoLists/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title")] User user)
         {
             if (ModelState.IsValid)
             {
-                await _userService.Save(user);
-
+                await _userService.Save(user);  // Use IUserService's Save method
                 return RedirectToAction(nameof(Index));
             }
             return View(user);
@@ -78,17 +71,15 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var todoList = await _userService.Get(id.Value);
+            var todoList = await _userService.Get(id.Value);  // Use IUserService's Get method
             if (todoList == null)
             {
                 return NotFound();
             }
-            return View(User);
+            return View(todoList);
         }
 
         // POST: TodoLists/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Title")] User user)
@@ -100,7 +91,7 @@ namespace KooliProjekt.Controllers
 
             if (ModelState.IsValid)
             {
-                await _userService.Save(user);
+                await _userService.Save(user);  // Use IUserService's Save method
                 return RedirectToAction(nameof(Index));
             }
             return View(user);
@@ -114,7 +105,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var todoList = await _userService.Get(id.Value);
+            var todoList = await _userService.Get(id.Value);  // Use IUserService's Get method
             if (todoList == null)
             {
                 return NotFound();
@@ -128,8 +119,7 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _userService.Delete(id);
-
+            await _userService.Delete(id);  // Use IUserService's Delete method
             return RedirectToAction(nameof(Index));
         }
     }

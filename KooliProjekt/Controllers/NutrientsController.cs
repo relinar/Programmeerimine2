@@ -1,27 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using KooliProjekt.Data;
+using KooliProjekt.Data.Repositories;
+using KooliProjekt.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using KooliProjekt.Data;
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Controllers
 {
     public class NutrientsController : Controller
     {
-        private readonly ApplicationDbContext nutrientsservice;
+        private readonly InutrientsRepository _nutrientsRepository;
 
-        public NutrientsController(ApplicationDbContext context)
+        // Constructor for dependency injection
+        public NutrientsController(InutrientsRepository nutrientsRepository)
         {
-            nutrientsservice = context;
+            _nutrientsRepository = nutrientsRepository;
         }
 
-        // GET: Nutrients
-        public async Task<IActionResult> Index(int page = 1)
+        // GET: Nutrients/Index
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10, NutrientsSearch nutrientsSearch = null)
         {
-            return View(await nutrientsservice.nutrients.GetPagedAsync(page, 5));
+            // If no search parameters, initialize to empty search
+            nutrientsSearch = nutrientsSearch ?? new NutrientsSearch();
+
+            // Fetch paginated results based on the search criteria
+            var nutrientsResult = await _nutrientsRepository.List(page, pageSize, nutrientsSearch);
+
+            // Prepare the view model with search and results data
+            var viewModel = new NutrientsIndexModel
+            {
+                Search = nutrientsSearch,
+                Data = nutrientsResult
+            };
+
+            return View(viewModel);
         }
 
         // GET: Nutrients/Details/5
@@ -32,14 +43,13 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var nutrients = await nutrientsservice.nutrients
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (nutrients == null)
+            var nutrient = await _nutrientsRepository.Get(id.Value);
+            if (nutrient == null)
             {
                 return NotFound();
             }
 
-            return View(nutrients);
+            return View(nutrient);
         }
 
         // GET: Nutrients/Create
@@ -49,19 +59,16 @@ namespace KooliProjekt.Controllers
         }
 
         // POST: Nutrients/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("NutrientsID,Name,Carbohydrates,Sugars,Fats,FoodChart")] Nutrients nutrients)
+        public async Task<IActionResult> Create([Bind("Name, Carbohydrates, Sugars, Fats")] Nutrients nutrient)
         {
             if (ModelState.IsValid)
             {
-                nutrientsservice.Add(nutrients);
-                await nutrientsservice.SaveChangesAsync();
+                await _nutrientsRepository.Save(nutrient);  // Save new nutrient
                 return RedirectToAction(nameof(Index));
             }
-            return View(nutrients);
+            return View(nutrient);
         }
 
         // GET: Nutrients/Edit/5
@@ -72,47 +79,30 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var nutrients = await nutrientsservice.nutrients.FindAsync(id);
-            if (nutrients == null)
+            var nutrient = await _nutrientsRepository.Get(id.Value);
+            if (nutrient == null)
             {
                 return NotFound();
             }
-            return View(nutrients);
+            return View(nutrient);
         }
 
         // POST: Nutrients/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("NutrientsID,Name,Carbohydrates,Sugars,Fats,FoodChart")] Nutrients nutrients)
+        public async Task<IActionResult> Edit(int id, [Bind("Id, Name, Carbohydrates, Sugars, Fats")] Nutrients nutrient)
         {
-            if (id != nutrients.Id)
+            if (id != nutrient.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    nutrientsservice.Update(nutrients);
-                    await nutrientsservice.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!NutrientsExists(nutrients.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                await _nutrientsRepository.Save(nutrient);  // Save updated nutrient
                 return RedirectToAction(nameof(Index));
             }
-            return View(nutrients);
+            return View(nutrient);
         }
 
         // GET: Nutrients/Delete/5
@@ -123,14 +113,13 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var nutrients = await nutrientsservice.nutrients
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (nutrients == null)
+            var nutrient = await _nutrientsRepository.Get(id.Value);
+            if (nutrient == null)
             {
                 return NotFound();
             }
 
-            return View(nutrients);
+            return View(nutrient);
         }
 
         // POST: Nutrients/Delete/5
@@ -138,19 +127,8 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var nutrients = await nutrientsservice.nutrients.FindAsync(id);
-            if (nutrients != null)
-            {
-                nutrientsservice.nutrients.Remove(nutrients);
-            }
-
-            await nutrientsservice.SaveChangesAsync();
+            await _nutrientsRepository.Delete(id);  // Delete nutrient
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool NutrientsExists(int id)
-        {
-            return nutrientsservice.nutrients.Any(e => e.Id == id);
         }
     }
 }

@@ -1,59 +1,86 @@
-﻿@model amountIndexModel
+﻿@model AmountIndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Amounts Index";
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
-</p>
+<h1>Amounts Index</h1>
 
 <!-- Search Form -->
 <form method="get">
     <div class="form-group">
-        <label class="control-label">Search Name</label>
-        <input asp-for="Search.Name" class="form-control" />
+        <label class="control-label">Search Amount ID</label>
+        <input asp-for="Search.AmountID" class="form-control" />
     </div>
     <div class="form-group">
-        <label class="control-label">Search Role</label>
-        <input asp-for="Search.Role" class="form-control" />
+        <label class="control-label">Search Nutrients ID</label>
+        <input asp-for="Search.NutrientsID" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label class="control-label">Search Amount Date</label>
+        <input asp-for="Search.AmountDate" type="date" class="form-control" />
     </div>
     <div class="form-group">
         <button class="btn btn-primary">Search</button>
-        <a asp-controller="Users" asp-action="Index" class="btn btn-secondary">Reset</a>
+        <a asp-action="Index" class="btn btn-secondary">Reset</a>
     </div>
 </form>
 
-<!-- Users Table -->
+<!-- Amounts Table -->
 <table class="table">
     <thead>
         <tr>
-            <th>Name</th>
-            <th>Role</th>
-            <th>Daily Summary</th>
-            <th>Meal</th>
+            <th>Amount ID</th>
+            <th>Nutrients ID</th>
+            <th>Amount Date</th>
             <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model.Data.Results)
         {
-            <tr>
-                <td>@Html.DisplayFor(modelItem => item.Name)</td>
-                <td>@Html.DisplayFor(modelItem => item.Role)</td>
-                <td>@Html.DisplayFor(modelItem => item.DailySummary)</td>
-                <td>@Html.DisplayFor(modelItem => item.Meal)</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.AmountID)</td>
+                    <td>@Html.DisplayFor(modelItem => item.NutrientsID)</td>
+                    <td>@Html.DisplayFor(modelItem => item.AmountDate)</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.AmountID">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.AmountID">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.AmountID">Delete</a>
+                    </td>
+                </tr>
         }
     </tbody>
 </table>
 
-<!-- Pager Component for Pagination -->
-@(await Component.InvokeAsync<PagerViewComponent>(Model.Data))
+<!-- Pagination Controls -->
+<div class="pagination">
+    @if (Model.Data.PageCount > 1)
+    {
+            <ul class="pagination">
+                <!-- Previous page link -->
+            @if (Model.Data.CurrentPage > 1)
+            {
+                        <li class="page-item">
+                            <a class="page-link" href="?page=@(Model.Data.CurrentPage - 1)&AmountID=@Model.Search.AmountID&NutrientsID=@Model.Search.NutrientsID&AmountDate=@Model.Search.AmountDate?.ToString("yyyy-MM-dd")">Previous</a>
+                        </li>
+            }
+
+                <!-- Page links -->
+            @for (int i = 1; i <= Model.Data.PageCount; i++)
+            {
+                        <li class="page-item @(i == Model.Data.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="?page=@i&AmountID=@Model.Search.AmountID&NutrientsID=@Model.Search.NutrientsID&AmountDate=@Model.Search.AmountDate?.ToString("yyyy-MM-dd")">@i</a>
+                        </li>
+            }
+
+                <!-- Next page link -->
+            @if (Model.Data.CurrentPage < Model.Data.PageCount)
+            {
+                        <li class="page-item">
+                            <a class="page-link" href="?page=@(Model.Data.CurrentPage + 1)&AmountID=@Model.Search.AmountID&NutrientsID=@Model.Search.NutrientsID&AmountDate=@Model.Search.AmountDate?.ToString("yyyy-MM-dd")">Next</a>
+                        </li>
+            }
+            </ul>
+    }
+</div>
