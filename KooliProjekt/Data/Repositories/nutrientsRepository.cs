@@ -6,14 +6,15 @@ using System.Threading.Tasks;
 
 namespace KooliProjekt.Data.Repositories
 {
-    public class NutrientsRepository : BaseRepository<Nutrients>, InutrientsRepository
+    public class NutrientsRepository : BaseRepository<Nutrients>, INutrientsRepository
     {
         public NutrientsRepository(ApplicationDbContext context) : base(context)
         { }
 
+        // List method with pagination and filtering
         public async Task<PagedResult<Nutrients>> List(int page, int pageSize, NutrientsSearch search)
         {
-            var query = _context.nutrients.AsQueryable(); // Start query
+            var query = _context.Nutrients.AsQueryable(); // Start query
 
             // Apply filters if present in the search model
             if (search != null)
@@ -43,7 +44,40 @@ namespace KooliProjekt.Data.Repositories
                 }
             }
 
-            return await query.GetPagedAsync(page, pageSize); // Paginate the results
+            // Fetching the total row count for pagination
+            var rowCount = await query.CountAsync();
+            // Paginate the results
+            var results = await query.Skip((page - 1) * pageSize)
+                                      .Take(pageSize)
+                                      .ToListAsync();
+
+            return new PagedResult<Nutrients>
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                RowCount = rowCount,
+                PageCount = (int)Math.Ceiling((double)rowCount / pageSize),
+                Results = results
+            };
+        }
+
+        public async Task<Nutrients> Get(int id)
+        {
+            return await _context.Nutrients.FindAsync(id);
+        }
+
+        public async Task Save(Nutrients nutrients)
+        {
+            await SaveAsync(nutrients);
+        }
+
+        public async Task Delete(int id)
+        {
+            var nutrient = await Get(id);
+            if (nutrient != null)
+            {
+                await DeleteAsync(nutrient);
+            }
         }
     }
 }

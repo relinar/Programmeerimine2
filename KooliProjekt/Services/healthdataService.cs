@@ -1,6 +1,10 @@
-﻿using KooliProjekt.Data;
+﻿// File: Services/HealthDataService.cs
+using KooliProjekt.Data;
 using KooliProjekt.Models;
-using Microsoft.EntityFrameworkCore;
+using KooliProjekt.Search;
+using Microsoft.EntityFrameworkCore;  // Required for async methods
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
 {
@@ -8,53 +12,81 @@ namespace KooliProjekt.Services
     {
         private readonly ApplicationDbContext _context;
 
-        // Constructor to inject the ApplicationDbContext
         public HealthDataService(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // Method to get a list of health data records with pagination
-        public async Task<PagedResult<HealthData>> List(int page, int pageSize)
+        public async Task<PagedResult<HealthData>> List(int page, int pageSize, HealthDataSearch search)
         {
-            return await _context.health_data.GetPagedAsync(page, pageSize); // Assuming GetPagedAsync is implemented
+            var query = _context.health_data.AsQueryable();
+
+            // Apply filters based on search criteria
+            if (!string.IsNullOrEmpty(search.User))
+                query = query.Where(x => x.User.Contains(search.User));
+
+            if (search.BloodSugar.HasValue)
+                query = query.Where(x => x.BloodSugar == search.BloodSugar);
+
+            if (search.Weight.HasValue)
+                query = query.Where(x => x.Weight == search.Weight);
+
+            if (!string.IsNullOrEmpty(search.BloodAir))
+                query = query.Where(x => x.BloodAir.Contains(search.BloodAir));
+
+            if (search.Systolic.HasValue)
+                query = query.Where(x => x.Systolic == search.Systolic);
+
+            if (search.Diastolic.HasValue)
+                query = query.Where(x => x.Diastolic == search.Diastolic);
+
+            if (!string.IsNullOrEmpty(search.Pulse))
+                query = query.Where(x => x.Pulse.Contains(search.Pulse));
+
+            if (search.Age.HasValue)
+                query = query.Where(x => x.Age == search.Age);
+
+            // Apply pagination
+            var totalCount = await query.CountAsync();  // Async count
+            var results = await query
+                                .Skip((page - 1) * pageSize)
+                                .Take(pageSize)
+                                .ToListAsync();  // Async ToList
+
+            return new PagedResult<HealthData>
+            {
+                Results = results,
+                RowCount = totalCount,
+                CurrentPage = page,
+                PageCount = (int)Math.Ceiling((double)totalCount / pageSize)
+            };
         }
 
-        // Method to get a specific health data record by its ID
         public async Task<HealthData> Get(int id)
         {
-            return await _context.health_data.FirstOrDefaultAsync(m => m.Id == id);
+            return await _context.health_data.FindAsync(id);  // This already works for async, no changes needed here.
         }
 
-        // Method to save a health data record (add or update)
-        public async Task Save(HealthData item)
+        public Task Save(HealthData item)
         {
             if (item.Id == 0)
-            {
-                _context.Add(item); // Add a new health data record
-            }
+                _context.health_data.Add(item);
             else
-            {
-                _context.Update(item); // Update the existing health data record
-            }
+                _context.health_data.Update(item);
 
-            await _context.SaveChangesAsync();
+            return _context.SaveChangesAsync();
         }
 
-        // Method to delete a health data record by ID
-        public async Task Delete(int id)
+        public Task Delete(int id)
         {
-            var healthData = await _context.health_data.FindAsync(id); // Find the health data record by ID
-            if (healthData != null)
+            var entity = _context.health_data.Find(id);
+            if (entity != null)
             {
-                _context.health_data.Remove(healthData); // Remove the record from the database
-                await _context.SaveChangesAsync(); // Save changes to the database
+                _context.health_data.Remove(entity);
+                return _context.SaveChangesAsync();
             }
-            else
-            {
-                // Optionally, throw an exception if not found
-                throw new KeyNotFoundException($"HealthData with id {id} not found.");
-            }
+
+            return Task.CompletedTask;
         }
     }
 }

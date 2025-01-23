@@ -1,5 +1,4 @@
-﻿// File: Data/Repositories/FoodChartRepository.cs
-using KooliProjekt.Data;
+﻿using KooliProjekt.Data;
 using KooliProjekt.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -48,6 +47,38 @@ namespace KooliProjekt.Data.Repositories
 
             // Return paginated result
             return await query.GetPagedAsync(page, pageSize);
+        }
+
+        // Implement Get method
+        public async Task<FoodChart> Get(int id)
+        {
+            return await _context.food_Chart
+                .FirstOrDefaultAsync(fc => fc.Id == id); // Fetches a FoodChart by Id
+        }
+
+        // Implement Save method
+        public async Task Save(FoodChart foodChart)
+        {
+            if (foodChart.Id == 0) // New FoodChart
+            {
+                await _context.food_Chart.AddAsync(foodChart);
+            }
+            else // Existing FoodChart, update
+            {
+                _context.food_Chart.Update(foodChart);
+            }
+            await _context.SaveChangesAsync(); // Save changes to database
+        }
+
+        // Implement Delete method
+        public async Task Delete(int id)
+        {
+            var foodChart = await _context.food_Chart.FindAsync(id);
+            if (foodChart != null)
+            {
+                _context.food_Chart.Remove(foodChart);
+                await _context.SaveChangesAsync(); // Commit deletion to the database
+            }
         }
     }
 }

@@ -24,7 +24,8 @@ namespace KooliProjekt
             builder.Services.AddScoped<Services.IUserService, UserService>();
             builder.Services.AddScoped<Services.IAmountService, AmountService>();
             builder.Services.AddScoped<INutrientsService, NutrientsService>();
-            builder.Services.AddScoped<InutrientsRepository, NutrientsRepository>();
+            builder.Services.AddScoped<INutrientsRepository, NutrientsRepository>();
+            builder.Services.AddScoped<IHealthDataService, HealthDataService>();
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)

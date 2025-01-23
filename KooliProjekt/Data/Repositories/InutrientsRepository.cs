@@ -2,7 +2,7 @@
 
 namespace KooliProjekt.Data.Repositories
 {
-    public interface InutrientsRepository
+    public interface INutrientsRepository
     {
         Task<PagedResult<Nutrients>> List(int page, int pageSize, NutrientsSearch search);
         Task<Nutrients> Get(int id);

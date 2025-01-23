@@ -155,9 +155,9 @@ public static class SeedData
 
             dbContext.SaveChanges();  // Salvestame muudatused andmebaasi
         }
-        if (!dbContext.nutrients.Any())  // Make sure this is "Nutrients" and not "nutrients"
+        if (!dbContext.Nutrients.Any())  // Make sure this is "Nutrients" and not "nutrients"
         {
-            dbContext.nutrients.AddRange(
+            dbContext.Nutrients.AddRange(
                 new Nutrients { Name = "Carbohydrates", Sugars = 0, Fats = 0, Carbohydrates = 30 },
                 new Nutrients { Name = "Proteins", Sugars = 0, Fats = 0, Carbohydrates = 25 },
                 new Nutrients { Name = "Fats", Sugars = 0, Fats = 15, Carbohydrates = 0 },

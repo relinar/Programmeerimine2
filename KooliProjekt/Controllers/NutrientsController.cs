@@ -8,10 +8,10 @@ namespace KooliProjekt.Controllers
 {
     public class NutrientsController : Controller
     {
-        private readonly InutrientsRepository _nutrientsRepository;
+        private readonly INutrientsRepository _nutrientsRepository;
 
         // Constructor for dependency injection
-        public NutrientsController(InutrientsRepository nutrientsRepository)
+        public NutrientsController(INutrientsRepository nutrientsRepository)
         {
             _nutrientsRepository = nutrientsRepository;
         }
