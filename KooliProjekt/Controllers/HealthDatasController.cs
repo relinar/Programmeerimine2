@@ -1,156 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;    
+﻿// File: Controllers/HealthDatasController.cs
 using KooliProjekt.Data;
+using KooliProjekt.Models;
+using KooliProjekt.Services;
+using KooliProjekt.Search;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Controllers
 {
     public class HealthDatasController : Controller
     {
-        private readonly ApplicationDbContext healthdataService;
+        private readonly IHealthDataService _healthDataService;
 
-        public HealthDatasController(ApplicationDbContext context)
+        public HealthDatasController(IHealthDataService healthDataService)
         {
-            healthdataService = context;
+            _healthDataService = healthDataService;
         }
 
-        // GET: HealthDatas
-        public async Task<IActionResult> Index(int page = 1)
+        // GET: HealthDatas/Index
+        public async Task<IActionResult> Index(int page = 1, HealthDataSearch searchModel = null)
         {
-            return View(await healthdataService.health_data.GetPagedAsync(page, 5));
-        }
+            searchModel = searchModel ?? new HealthDataSearch(); // If no search model is passed, create a new one
 
-        // GET: HealthDatas/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            // Fetch paginated health data based on the search model
+            var pagedResult = await _healthDataService.List(page, 5, searchModel);
 
-            var healthData = await healthdataService.health_data
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (healthData == null)
-            {
-                return NotFound();
-            }
-
-            return View(healthData);
-        }
-
-        // GET: HealthDatas/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: HealthDatas/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("HealthDataID,User,Date,BloodSugar,Weight,BloodAir,Systolic,Diastolic,Pulse")] HealthData healthData)
-        {
-            if (ModelState.IsValid)
-            {
-                healthdataService.Add(healthData);
-                await healthdataService.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(healthData);
-        }
-
-        // GET: HealthDatas/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var healthData = await healthdataService.health_data.FindAsync(id);
-            if (healthData == null)
-            {
-                return NotFound();
-            }
-            return View(healthData);
-        }
-
-        // POST: HealthDatas/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("HealthDataID,User,Date,BloodSugar,Weight,BloodAir,Systolic,Diastolic,Pulse")] HealthData healthData)
-        {
-            if (id != healthData.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    healthdataService.Update(healthData);
-                    await healthdataService.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!HealthDataExists(healthData.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(healthData);
-        }
-
-        // GET: HealthDatas/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var healthData = await healthdataService.health_data
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (healthData == null)
-            {
-                return NotFound();
-            }
-
-            return View(healthData);
-        }
-
-        // POST: HealthDatas/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var healthData = await healthdataService.health_data.FindAsync(id);
-            if (healthData != null)
-            {
-                healthdataService.health_data.Remove(healthData);
-            }
-
-            await healthdataService.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool HealthDataExists(int id)
-        {
-            return healthdataService.health_data.Any(e => e.Id == id);
+            // Return the view with the paged results
+            return View(pagedResult);
         }
     }
 }

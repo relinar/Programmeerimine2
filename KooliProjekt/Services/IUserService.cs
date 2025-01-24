@@ -1,11 +1,14 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
+using KooliProjekt.Search;
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
 {
     public interface IUserService
     {
-        // Method to retrieve a paginated list of users
-        Task<PagedResult<User>> List(int page, int pageSize);
+        // Method to list users with pagination and search
+        Task<PagedResult<User>> List(int page, int pageSize, UserSearch search);
 
         // Method to retrieve a single user by their id
         Task<User> Get(int id);

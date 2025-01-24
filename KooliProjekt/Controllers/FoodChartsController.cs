@@ -1,31 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+﻿// File: Controllers/FoodChartsController.cs
 using KooliProjekt.Data;
+using KooliProjekt.Models;
 using KooliProjekt.Services;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Controllers
 {
     public class FoodChartsController : Controller
     {
-        private readonly ApplicationDbContext FoodChartService;
+        private readonly IFoodChartService _foodChartService;
 
-        public FoodChartsController(ApplicationDbContext context)
+        // Constructor for dependency injection
+        public FoodChartsController(IFoodChartService foodChartService)
         {
-            FoodChartService = context;
+            _foodChartService = foodChartService;
         }
 
-        // GET: food_chart
-        public async Task<IActionResult> Index(int page = 1)
+        // GET: FoodCharts/Index
+        public async Task<IActionResult> Index(int page = 1, FoodChartIndexModel model = null)
         {
-            return View(await FoodChartService.food_Chart.GetPagedAsync(page, 5));
+            model = model ?? new FoodChartIndexModel();
+            model.Data = await _foodChartService.List(page, 5, model.Search);  // Fetch paginated results
+            
+            return View(model);
         }
 
-        // GET: food_chart/Details/5
+        // GET: FoodCharts/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,39 +34,35 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var food_chart = await FoodChartService.food_Chart
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (food_chart == null)
+            var foodChart = await _foodChartService.Get(id.Value);
+            if (foodChart == null)
             {
                 return NotFound();
             }
 
-            return View(food_chart);
+            return View(foodChart);
         }
 
-        // GET: food_chart/Create
+        // GET: FoodCharts/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: food_chart/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: FoodCharts/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,InvoiceNo,InvoiceDate,user,date,meal,nutrients,amount")] FoodChart food_chart)
+        public async Task<IActionResult> Create([Bind("InvoiceNo,InvoiceDate,user,date,meal,nutrients,amount")] FoodChart foodChart)
         {
             if (ModelState.IsValid)
             {
-                FoodChartService.Add(food_chart);
-                await FoodChartService.SaveChangesAsync();
+                await _foodChartService.Save(foodChart);  // Save new food chart
                 return RedirectToAction(nameof(Index));
             }
-            return View(food_chart);
+            return View(foodChart);
         }
 
-        // GET: food_chart/Edit/5
+        // GET: FoodCharts/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -73,50 +70,33 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var food_chart = await FoodChartService.food_Chart.FindAsync(id);
-            if (food_chart == null)
+            var foodChart = await _foodChartService.Get(id.Value);
+            if (foodChart == null)
             {
                 return NotFound();
             }
-            return View(food_chart);
+            return View(foodChart);
         }
 
-        // POST: food_chart/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: FoodCharts/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,InvoiceNo,InvoiceDate,user,date,meal,nutrients,amount")] FoodChart food_chart)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,InvoiceNo,InvoiceDate,user,date,meal,nutrients,amount")] FoodChart foodChart)
         {
-            if (id != food_chart.Id)
+            if (id != foodChart.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    FoodChartService.Update(food_chart);
-                    await FoodChartService.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!food_chartExists(food_chart.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                await _foodChartService.Save(foodChart);  // Save updated food chart
                 return RedirectToAction(nameof(Index));
             }
-            return View(food_chart);
+            return View(foodChart);
         }
 
-        // GET: food_chart/Delete/5
+        // GET: FoodCharts/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -124,34 +104,22 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var food_chart = await FoodChartService.food_Chart
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (food_chart == null)
+            var foodChart = await _foodChartService.Get(id.Value);
+            if (foodChart == null)
             {
                 return NotFound();
             }
 
-            return View(food_chart);
+            return View(foodChart);
         }
 
-        // POST: food_chart/Delete/5
+        // POST: FoodCharts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var food_chart = await FoodChartService.food_Chart.FindAsync(id);
-            if (food_chart != null)
-            {
-                FoodChartService.food_Chart.Remove(food_chart);
-            }
-
-            await FoodChartService.SaveChangesAsync();
+            await _foodChartService.Delete(id);  // Delete food chart
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool food_chartExists(int id)
-        {
-            return FoodChartService.food_Chart.Any(e => e.Id == id);
         }
     }
 }

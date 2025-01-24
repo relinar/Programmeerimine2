@@ -1,27 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
+using KooliProjekt.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using KooliProjekt.Data;
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Controllers
 {
     public class AmountsController : Controller
     {
-        private readonly ApplicationDbContext amountService;
+        private readonly IAmountService _amountService;
 
-        public AmountsController(ApplicationDbContext context)
+        // Constructor for dependency injection
+        public AmountsController(IAmountService amountService)
         {
-            amountService = context;
+            _amountService = amountService;
         }
 
-        // GET: Amounts
-        public async Task<IActionResult> Index(int page = 1)
+        // GET: Amounts/Index
+        public async Task<IActionResult> Index(int page = 1, AmountIndexModel model = null)
         {
-            return View(await amountService.amount.GetPagedAsync(page, 5));
+            model = model ?? new AmountIndexModel();
+            model.Data = await _amountService.List(page, 5, model.Search);  // Fetch paginated results
+
+            return View(model);
         }
 
         // GET: Amounts/Details/5
@@ -32,8 +33,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var amount = await amountService.amount
-                .FirstOrDefaultAsync(m => m.AmountID == id);
+            var amount = await _amountService.Get(id.Value);
             if (amount == null)
             {
                 return NotFound();
@@ -49,16 +49,13 @@ namespace KooliProjekt.Controllers
         }
 
         // POST: Amounts/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AmountID,NutrientsID,AmountDate")] Amount amount)
+        public async Task<IActionResult> Create([Bind("AmountID, NutrientsID, AmountDate, AmountValue")] Amount amount)
         {
             if (ModelState.IsValid)
             {
-                amountService.Add(amount);
-                await amountService.SaveChangesAsync();
+                await _amountService.Save(amount);  // Save new amount
                 return RedirectToAction(nameof(Index));
             }
             return View(amount);
@@ -72,20 +69,19 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var amount = await amountService.amount.FindAsync(id);
+            var amount = await _amountService.Get(id.Value);
             if (amount == null)
             {
                 return NotFound();
             }
+
             return View(amount);
         }
 
         // POST: Amounts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("AmountID,NutrientsID,AmountDate")] Amount amount)
+        public async Task<IActionResult> Edit(int id, [Bind("AmountID, NutrientsID, AmountDate, AmountValue")] Amount amount)
         {
             if (id != amount.AmountID)
             {
@@ -94,22 +90,7 @@ namespace KooliProjekt.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    amountService.Update(amount);
-                    await amountService.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AmountExists(amount.AmountID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                await _amountService.Save(amount);  // Save updated amount
                 return RedirectToAction(nameof(Index));
             }
             return View(amount);
@@ -123,8 +104,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var amount = await amountService.amount
-                .FirstOrDefaultAsync(m => m.AmountID == id);
+            var amount = await _amountService.Get(id.Value);
             if (amount == null)
             {
                 return NotFound();
@@ -138,19 +118,8 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var amount = await amountService.amount.FindAsync(id);
-            if (amount != null)
-            {
-                amountService.amount.Remove(amount);
-            }
-
-            await amountService.SaveChangesAsync();
+            await _amountService.Delete(id);  // Delete amount
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool AmountExists(int id)
-        {
-            return amountService.amount.Any(e => e.AmountID == id);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Services
@@ -14,7 +15,7 @@ namespace KooliProjekt.Services
         }
 
         // List method to return a paginated list of Nutrients
-        public async Task<PagedResult<Nutrients>> List(int page, int pageSize)
+        public async Task<PagedResult<Nutrients>> List(int page, int pageSize, NutrientsSearch search)
         {
             return await _context.nutrients.GetPagedAsync(page, pageSize); // Assuming you have a custom GetPagedAsync extension method for pagination
         }

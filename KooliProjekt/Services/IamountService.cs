@@ -1,10 +1,21 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
+using KooliProjekt.Search;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-public interface IAmountService
+namespace KooliProjekt.Services
 {
-    Task<List<Amount>> GetAmountsAsync();
-    Task<Amount> GetAmountAsync(int id);
-    Task AddAmountAsync(Amount item);
-    Task UpdateAmountAsync(Amount item);
-    Task DeleteAmountAsync(int id);
+    public interface IAmountService
+    {
+        Task<List<Amount>> GetAmountsAsync();
+        Task<Amount> Get(int id);
+        Task AddAmountAsync(Amount item);
+        Task UpdateAmountAsync(Amount item);
+        Task Delete(int id);
+        Task Save(Amount item);
+
+        // The List method for paged results with search functionality
+        Task<PagedResult<Amount>> List(int page, int pageSize, amountSearch search);
+    }
 }

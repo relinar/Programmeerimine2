@@ -1,4 +1,5 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
 using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
@@ -6,7 +7,7 @@ namespace KooliProjekt.Services
     public interface INutrientsService
     {
         // Asynchronous method to get a paginated list of Nutrients
-        Task<PagedResult<Nutrients>> List(int page, int pageSize);
+        Task<PagedResult<Nutrients>> List(int page, int pageSize, NutrientsSearch search);
 
         // Asynchronous method to get a specific Nutrients item by id
         Task<Nutrients> Get(int id);

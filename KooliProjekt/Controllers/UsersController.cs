@@ -3,28 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
+using KooliProjekt.Services;
+using KooliProjekt.Models;
 
 namespace KooliProjekt.Controllers
 {
     public class UsersController : Controller
     {
-        private readonly ApplicationDbContext UserService;
+        private readonly IUserService _userService;  // Keep this as IUserService
 
-        public UsersController(ApplicationDbContext context)
+        // Constructor to inject the IUserService
+        public UsersController(IUserService userService)  // Change to inject IUserService
         {
-            UserService = context;
+            _userService = userService;  // Correct assignment
         }
 
         // GET: Users
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(int page = 1, UserIndexModel model = null)
         {
-            return View(await UserService.User.GetPagedAsync(page, 5));
+            model = model ?? new UserIndexModel();
+            model.Data = await _userService.List(page, 5, model.Search);  // Use IUserService's List method
+
+            return View(model);
         }
 
-        // GET: Users/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -32,8 +35,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var user = await UserService.User
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var user = await _userService.Get(id.Value);  // Use IUserService's Get method
             if (user == null)
             {
                 return NotFound();
@@ -42,29 +44,26 @@ namespace KooliProjekt.Controllers
             return View(user);
         }
 
-        // GET: Users/Create
+        // GET: TodoLists/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Users/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: TodoLists/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UserID,Name,Role,DailySummary,Meal")] User user)
+        public async Task<IActionResult> Create([Bind("Id,Title")] User user)
         {
             if (ModelState.IsValid)
             {
-                UserService.Add(user);
-                await UserService.SaveChangesAsync();
+                await _userService.Save(user);  // Use IUserService's Save method
                 return RedirectToAction(nameof(Index));
             }
             return View(user);
         }
 
-        // GET: Users/Edit/5
+        // GET: TodoLists/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -72,20 +71,18 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var user = await UserService.User.FindAsync(id);
-            if (user == null)
+            var todoList = await _userService.Get(id.Value);  // Use IUserService's Get method
+            if (todoList == null)
             {
                 return NotFound();
             }
-            return View(user);
+            return View(todoList);
         }
 
-        // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: TodoLists/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UserID,Name,Role,DailySummary,Meal")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title")] User user)
         {
             if (id != user.Id)
             {
@@ -94,28 +91,13 @@ namespace KooliProjekt.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    UserService.Update(user);
-                    await UserService.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UserExists(user.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                await _userService.Save(user);  // Use IUserService's Save method
                 return RedirectToAction(nameof(Index));
             }
             return View(user);
         }
 
-        // GET: Users/Delete/5
+        // GET: TodoLists/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -123,34 +105,22 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var user = await UserService.User
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (user == null)
+            var todoList = await _userService.Get(id.Value);  // Use IUserService's Get method
+            if (todoList == null)
             {
                 return NotFound();
             }
 
-            return View(user);
+            return View(todoList);
         }
 
-        // POST: Users/Delete/5
+        // POST: TodoLists/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var user = await UserService.User.FindAsync(id);
-            if (user != null)
-            {
-                UserService.User.Remove(user);
-            }
-
-            await UserService.SaveChangesAsync();
+            await _userService.Delete(id);  // Use IUserService's Delete method
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool UserExists(int id)
-        {
-            return UserService.User.Any(e => e.Id == id);
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
+using KooliProjekt.Search;
 using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Services
@@ -14,7 +16,7 @@ namespace KooliProjekt.Services
         }
 
         // Method to get a list of health data records with pagination
-        public async Task<PagedResult<HealthData>> List(int page, int pageSize)
+        public async Task<PagedResult<HealthData>> List(int page, int pageSize, HealthDataSearch search)
         {
             return await _context.health_data.GetPagedAsync(page, pageSize); // Assuming GetPagedAsync is implemented
         }

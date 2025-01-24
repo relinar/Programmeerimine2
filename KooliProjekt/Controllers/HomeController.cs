@@ -1,16 +1,15 @@
 ﻿using KooliProjekt.Models;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.ContentModel;
 using System.Diagnostics;
 
 namespace KooliProjekt.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        // Konstruktorit ei ole, kuna ei kasuta enam ILogger-t
+        public HomeController()
         {
-            _logger = logger;
         }
 
         public IActionResult Index()
@@ -18,7 +17,7 @@ namespace KooliProjekt.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult Privacy()  
         {
             return View();
         }

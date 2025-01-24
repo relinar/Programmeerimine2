@@ -1,4 +1,6 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
+using KooliProjekt.Search;
 using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
@@ -6,7 +8,7 @@ namespace KooliProjekt.Services
     public interface IHealthDataService
     {
         // Get a paginated list of health data
-        Task<PagedResult<HealthData>> List(int page, int pageSize);
+        Task<PagedResult<HealthData>> List(int page, int pageSize, HealthDataSearch search);
 
         // Get a specific health data record by its id
         Task<HealthData> Get(int id);

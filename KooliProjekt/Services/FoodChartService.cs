@@ -1,4 +1,6 @@
-﻿using KooliProjekt.Data;
+﻿// File: Services/FoodChartService.cs
+using KooliProjekt.Data;
+using KooliProjekt.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
@@ -14,7 +16,7 @@ namespace KooliProjekt.Services
         }
 
         // Implementing List method (pagination)
-        public async Task<PagedResult<FoodChart>> List(int page, int pageSize)
+        public async Task<PagedResult<FoodChart>> List(int page, int pageSize, FoodChartSearch search)
         {
             // Assuming GetPagedAsync is an extension method for paginated results
             return await _context.food_Chart.GetPagedAsync(page, pageSize);
@@ -56,4 +58,5 @@ namespace KooliProjekt.Services
             }
         }
     }
+
 }
