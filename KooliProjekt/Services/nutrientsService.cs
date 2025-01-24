@@ -1,6 +1,8 @@
-﻿using KooliProjekt.Data;
-using KooliProjekt.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using KooliProjekt.Models;
+using KooliProjekt.Data;
+using Microsoft.EntityFrameworkCore; // Add this for CountAsync and ToListAsync
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace KooliProjekt.Services
 {
@@ -8,48 +10,74 @@ namespace KooliProjekt.Services
     {
         private readonly ApplicationDbContext _context;
 
-        // Constructor to inject the ApplicationDbContext
         public NutrientsService(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // List method to return a paginated list of Nutrients
+        // List nutrients with pagination and search
         public async Task<PagedResult<Nutrients>> List(int page, int pageSize, NutrientsSearch search)
         {
-            return await _context.nutrients.GetPagedAsync(page, pageSize); // Assuming you have a custom GetPagedAsync extension method for pagination
-        }
+            var query = _context.nutrients.AsQueryable();
 
-        // Get method to retrieve a specific Nutrients item by id
-        public async Task<Nutrients> Get(int id)
-        {
-            return await _context.nutrients.FirstOrDefaultAsync(m => m.Id == id); // Fetches Nutrients item by id
-        }
-
-        // Save method to either add a new Nutrients or update an existing one
-        public async Task Save(Nutrients item)
-        {
-            if (item.Id == 0)
+            // Apply search filters if any
+            if (!string.IsNullOrEmpty(search.Name))
             {
-                _context.Add(item); // Adds a new Nutrients record
-            }
-            else
-            {
-                _context.Update(item); // Updates an existing Nutrients record
+                query = query.Where(n => n.Name.Contains(search.Name));
             }
 
-            await _context.SaveChangesAsync(); // Save changes to the database
+            // Convert string to float for search fields and check for valid parsing
+            if (!string.IsNullOrEmpty(search.Carbohydrates) && float.TryParse(search.Carbohydrates, out float carbs))
+            {
+                query = query.Where(n => n.Carbohydrates == carbs);
+            }
+
+            if (!string.IsNullOrEmpty(search.Fats) && float.TryParse(search.Fats, out float fats))
+            {
+                query = query.Where(n => n.Fats == fats);
+            }
+
+            if (!string.IsNullOrEmpty(search.Sugars) && float.TryParse(search.Sugars, out float sugars))
+            {
+                query = query.Where(n => n.Sugars == sugars);
+            }
+
+            // Pagination logic
+            var totalRows = await query.CountAsync();
+            var results = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            return new PagedResult<Nutrients>(page, pageSize, totalRows, results);
         }
 
-        // Delete method to remove a Nutrients item by id
+        // Add a new nutrient
+        public async Task Add(Nutrients nutrient)
+        {
+            _context.nutrients.Add(nutrient);
+            await _context.SaveChangesAsync();
+        }
+
+        // Update an existing nutrient
+        public async Task Update(Nutrients nutrient)
+        {
+            _context.nutrients.Update(nutrient);
+            await _context.SaveChangesAsync();
+        }
+
+        // Delete a nutrient by ID
         public async Task Delete(int id)
         {
-            var nutrients = await _context.nutrients.FindAsync(id); // Find Nutrients item by id
-            if (nutrients != null)
+            var nutrient = await _context.nutrients.FindAsync(id);
+            if (nutrient != null)
             {
-                _context.nutrients.Remove(nutrients); // Removes the item from the database
-                await _context.SaveChangesAsync(); // Save changes
+                _context.nutrients.Remove(nutrient);
+                await _context.SaveChangesAsync();
             }
+        }
+
+        // Get a specific nutrient by ID
+        public async Task<Nutrients> Get(int id)
+        {
+            return await _context.nutrients.FindAsync(id);
         }
     }
 }

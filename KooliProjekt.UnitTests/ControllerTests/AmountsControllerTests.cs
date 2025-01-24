@@ -1,12 +1,11 @@
 ﻿using KooliProjekt.Controllers;
 using KooliProjekt.Models;
-using KooliProjekt.Data;
+using KooliProjekt.Services;
 using Moq;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-using KooliProjekt.Services;
+using KooliProjekt.Data;
 
 namespace KooliProjekt.UnitTests.ControllerTests
 {
@@ -22,45 +21,117 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public async Task Index_should_return_correct_view_with_data()
+        public async Task Edit_Should_Return_NotFound_When_ID_Is_Missing()
         {
-            // Arrange
-            int page = 1; // Lehekülg, mille andmed taotleme
-            var searchModel = new amountSearch
-            {
-                AmountID = 1,
-                NutrientsID = 1,
-                AmountDate = new System.DateTime(2023, 01, 01)
-            };
+            int id = 0; // Assuming 0 is an invalid ID
 
-            var amountsData = new List<Amount>
-            {
-                new Amount { AmountID = 1, NutrientsID = 1, AmountDate = new System.DateTime(2023, 01, 01) },
-                new Amount { AmountID = 2, NutrientsID = 2, AmountDate = new System.DateTime(2023, 01, 02) }
-            };
+            var result = await _controller.Edit(id) as NotFoundResult;
 
-            var pagedResult = new PagedResult<Amount>
-            {
-                Results = amountsData,
-                CurrentPage = page,
-                PageCount = 1,
-                RowCount = amountsData.Count // Kasutame RowCount'i, et määrata kirje kogusumma
-            };
+            Assert.NotNull(result);
+        }
 
-            var indexModel = new AmountIndexModel
-            {
-                Data = pagedResult,
-                Search = searchModel
-            };
+        [Fact]
+        public async Task Edit_Should_Return_NotFound_When_Amount_Is_Missing()
+        {
+            int id = 1;
+            _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync((Amount)null);
 
-            _amountServiceMock.Setup(x => x.List(page, 5, searchModel)).ReturnsAsync(pagedResult);
+            var result = await _controller.Edit(id) as NotFoundResult;
 
-            // Act
-            var result = await _controller.Index(page, indexModel) as ViewResult;
+            Assert.NotNull(result);
+        }
 
-            // Assert
-            Assert.NotNull(result); // Veenduge, et vastus ei ole tühi
-            Assert.Equal(indexModel, result.Model); // Veenduge, et tagastatud mudel oleks õige
+        [Fact]
+        public async Task Edit_Should_Return_View_With_Model_When_Amount_Was_Found()
+        {
+            int id = 1;
+            var amount = new Amount { AmountID = id };
+            _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync(amount);
+
+            var result = await _controller.Edit(id) as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Edit");
+            Assert.Equal(amount, result.Model);
+        }
+
+        [Fact]
+        public async Task Details_Should_Return_NotFound_When_ID_Is_Missing()
+        {
+            int id = 0;
+
+            var result = await _controller.Details(id) as NotFoundResult;
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Details_Should_Return_NotFound_When_Amount_Is_Missing()
+        {
+            int id = 1;
+            _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync((Amount)null);
+
+            var result = await _controller.Details(id) as NotFoundResult;
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Details_Should_Return_View_With_Model_When_Amount_Was_Found()
+        {
+            int id = 1;
+            var amount = new Amount { AmountID = id };
+            _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync(amount);
+
+            var result = await _controller.Details(id) as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Details");
+            Assert.Equal(amount, result.Model);
+        }
+
+        [Fact]
+        public void Create_Should_Return_View()
+        {
+            var result = _controller.Create() as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Create");
+        }
+
+        [Fact]
+        public async Task Delete_Should_Return_NotFound_When_ID_Is_Missing()
+        {
+            int id = 0;
+
+            var result = await _controller.Delete(id) as NotFoundResult;
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Delete_Should_Return_NotFound_When_Amount_Is_Missing()
+        {
+            int id = 1;
+            _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync((Amount)null);
+
+            var result = await _controller.Delete(id) as NotFoundResult;
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Delete_Should_Return_View_With_Model_When_Amount_Was_Found()
+        {
+            int id = 1;
+            var amount = new Amount { AmountID = id };
+            _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync(amount);
+
+            var result = await _controller.Delete(id) as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Delete");
+            Assert.Equal(amount, result.Model);
         }
     }
 }

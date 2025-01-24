@@ -6,34 +6,34 @@ namespace KooliProjekt.UnitTests.ControllerTests
 {
     public class HomeControllerTests
     {
+        private readonly HomeController _controller;
+
+        public HomeControllerTests()
+        {
+            _controller = new HomeController();  // Initsialiseerige kontroller
+        }
+
         [Fact]
         public void Index_should_return_index_view()
         {
-            // Arrange
-            var controller = new HomeController();
-
+            // Arrange: ei ole vaja lisaseadeid, kuna meetod on lihtne
             // Act
-            var result = controller.Index() as ViewResult;
+            var result = _controller.Index() as ViewResult;
 
             // Assert
             Assert.NotNull(result);
-            Assert.True(result.ViewName == "Index" ||
-                        string.IsNullOrEmpty(result.ViewName));
+            Assert.True(result.ViewName == "Index" || string.IsNullOrEmpty(result.ViewName));
         }
 
         [Fact]
         public void Privacy_should_return_privacy_view()
         {
-            // Arrange
-            var controller = new HomeController();
-
             // Act
-            var result = controller.Privacy() as ViewResult;
+            var result = _controller.Privacy() as ViewResult;
 
             // Assert
             Assert.NotNull(result);
-            Assert.True(result.ViewName == "Privacy" ||
-                        string.IsNullOrEmpty(result.ViewName));
+            Assert.True(result.ViewName == "Privacy" || string.IsNullOrEmpty(result.ViewName));
         }
     }
 }

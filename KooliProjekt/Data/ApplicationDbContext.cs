@@ -16,6 +16,7 @@ namespace KooliProjekt.Data
         public DbSet<Nutrients> nutrients { get; set; }
         public DbSet<HealthData> health_data { get; set; }
         public DbSet<Amount> amount { get; set; }
+        public object HealthData { get; internal set; }
     }
   
     

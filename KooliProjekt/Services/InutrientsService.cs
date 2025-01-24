@@ -1,21 +1,25 @@
-﻿using KooliProjekt.Data;
+﻿using System.Threading.Tasks;
 using KooliProjekt.Models;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using KooliProjekt.Data;
 
 namespace KooliProjekt.Services
 {
     public interface INutrientsService
     {
-        // Asynchronous method to get a paginated list of Nutrients
+        // Existing method for listing nutrients
         Task<PagedResult<Nutrients>> List(int page, int pageSize, NutrientsSearch search);
 
-        // Asynchronous method to get a specific Nutrients item by id
-        Task<Nutrients> Get(int id);
+        // Add a new nutrient
+        Task Add(Nutrients nutrient);
 
-        // Asynchronous method to save (add or update) a Nutrients item
-        Task Save(Nutrients item);
+        // Update an existing nutrient
+        Task Update(Nutrients nutrient);
 
-        // Asynchronous method to delete a Nutrients item by id
+        // Delete a nutrient by ID
         Task Delete(int id);
+
+        // Get a specific nutrient by ID
+        Task<Nutrients> Get(int id);
     }
 }

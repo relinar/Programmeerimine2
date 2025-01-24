@@ -1,7 +1,6 @@
 ﻿using KooliProjekt.Data;
-using KooliProjekt.Models;
-using KooliProjekt.Search;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
 {
@@ -9,52 +8,39 @@ namespace KooliProjekt.Services
     {
         private readonly ApplicationDbContext _context;
 
-        // Constructor to inject the ApplicationDbContext
         public HealthDataService(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // Method to get a list of health data records with pagination
-        public async Task<PagedResult<HealthData>> List(int page, int pageSize, HealthDataSearch search)
-        {
-            return await _context.health_data.GetPagedAsync(page, pageSize); // Assuming GetPagedAsync is implemented
-        }
-
-        // Method to get a specific health data record by its ID
+        // Get a health data by Id
         public async Task<HealthData> Get(int id)
         {
-            return await _context.health_data.FirstOrDefaultAsync(m => m.Id == id);
+            return await _context.health_data.FindAsync(id);  // Ensure the DbSet<HealthData> is used
         }
 
-        // Method to save a health data record (add or update)
-        public async Task Save(HealthData item)
+        // Update a health data record
+        public async Task Update(HealthData healthData)
         {
-            if (item.Id == 0)
-            {
-                _context.Add(item); // Add a new health data record
-            }
-            else
-            {
-                _context.Update(item); // Update the existing health data record
-            }
-
+            _context.health_data.Update(healthData);  // Use HealthData type here
             await _context.SaveChangesAsync();
         }
 
-        // Method to delete a health data record by ID
+        // Add a new health data record
+        public async Task Add(HealthData healthData)
+        {
+            await _context.health_data.AddAsync(healthData);  // Add HealthData to the DbSet
+            await _context.SaveChangesAsync();
+        }
+
+        // Delete health data by Id
         public async Task Delete(int id)
         {
-            var healthData = await _context.health_data.FindAsync(id); // Find the health data record by ID
+            var healthData = await _context.health_data.FindAsync(id);  // Find health data by Id
             if (healthData != null)
             {
-                _context.health_data.Remove(healthData); // Remove the record from the database
-                await _context.SaveChangesAsync(); // Save changes to the database
-            }
-            else
-            {
-                // Optionally, throw an exception if not found
-                throw new KeyNotFoundException($"HealthData with id {id} not found.");
+                _context.health_data.Remove(healthData);  // Remove it from the DbSet
+                await _context.SaveChangesAsync();
             }
         }
     }

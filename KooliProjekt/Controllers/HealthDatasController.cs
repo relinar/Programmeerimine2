@@ -1,10 +1,7 @@
-﻿// File: Controllers/HealthDatasController.cs
-using KooliProjekt.Data;
-using KooliProjekt.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using KooliProjekt.Services;
-using KooliProjekt.Search;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+using KooliProjekt.Models;
+using KooliProjekt.Data;
 
 namespace KooliProjekt.Controllers
 {
@@ -17,16 +14,34 @@ namespace KooliProjekt.Controllers
             _healthDataService = healthDataService;
         }
 
-        // GET: HealthDatas/Index
-        public async Task<IActionResult> Index(int page = 1, HealthDataSearch searchModel = null)
+        // Edit Action: Shows the edit view for a health data record
+        public async Task<IActionResult> Edit(int id)
         {
-            searchModel = searchModel ?? new HealthDataSearch(); // If no search model is passed, create a new one
+            var healthData = await _healthDataService.Get(id);
+            if (healthData == null)
+                return NotFound();
+            return View(healthData);
+        }
 
-            // Fetch paginated health data based on the search model
-            var pagedResult = await _healthDataService.List(page, 5, searchModel);
+        // Add Action: Handles adding new health data
+        [HttpPost]
+        public async Task<IActionResult> Add(HealthData healthData)
+        {
+            if (ModelState.IsValid)
+            {
+                await _healthDataService.Add(healthData);
+                return RedirectToAction("Index");
+            }
+            return View(healthData);
+        }
 
-            // Return the view with the paged results
-            return View(pagedResult);
+        // Delete Action: Deletes a health data record
+        public async Task<IActionResult> Delete(int id)
+        {
+            var healthData = await _healthDataService.Get(id);
+            if (healthData == null)
+                return NotFound();
+            return View(healthData);
         }
     }
 }

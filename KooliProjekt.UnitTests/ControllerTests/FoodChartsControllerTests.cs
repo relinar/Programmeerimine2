@@ -1,13 +1,11 @@
 ﻿using KooliProjekt.Controllers;
 using KooliProjekt.Models;
-using KooliProjekt.Data;
 using KooliProjekt.Services;
 using Moq;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
+using KooliProjekt.Data;
 
 namespace KooliProjekt.UnitTests.ControllerTests
 {
@@ -18,73 +16,122 @@ namespace KooliProjekt.UnitTests.ControllerTests
 
         public FoodChartsControllerTests()
         {
-            // Mocki teenuse klass
             _foodChartServiceMock = new Mock<IFoodChartService>();
             _controller = new FoodChartsController(_foodChartServiceMock.Object);
         }
 
         [Fact]
-        public async Task Index_should_return_correct_view_with_data()
+        public async Task Edit_Should_Return_NotFound_When_ID_Is_Missing()
         {
-            // Arrange: Testiandmete ettevalmistamine
-            int page = 1;
-            var searchModel = new FoodChartSearch
-            {
-                InvoiceNo = "INV001",  // Testimisel otsime selle invoiceNumbriga toidugraafikuid
-                user = "testuser",
-                date = "2023-01-01",
-                meal = "lunch"
-            };
+            int id = 0; // Assuming 0 is an invalid ID
 
-            var foodChartsData = new List<FoodChart>
-            {
-                new FoodChart
-                {
-                    Id = 1,
-                    InvoiceNo = "INV001",
-                    InvoiceDate = new DateTime(2023, 01, 01),
-                    user = "testuser",
-                    date = "2023-01-01",
-                    meal = "lunch",
-                    nutrients = new DateTime(2023, 01, 01),
-                    amount = 50f
-                },
-                new FoodChart
-                {
-                    Id = 2,
-                    InvoiceNo = "INV002",
-                    InvoiceDate = new DateTime(2023, 01, 02),
-                    user = "testuser",
-                    date = "2023-01-02",
-                    meal = "dinner",
-                    nutrients = new DateTime(2023, 01, 02),
-                    amount = 100f
-                }
-            };
+            var result = await _controller.Edit(id) as NotFoundResult;
 
-            var pagedResult = new PagedResult<FoodChart>
-            {
-                Results = foodChartsData,
-                CurrentPage = page,
-                PageCount = 1, // Üks leht
-                RowCount = foodChartsData.Count // Andmete arv
-            };
+            Assert.NotNull(result);
+        }
 
-            var indexModel = new FoodChartIndexModel
-            {
-                Data = pagedResult,
-                Search = searchModel
-            };
+        [Fact]
+        public async Task Edit_Should_Return_NotFound_When_FoodChart_Is_Missing()
+        {
+            int id = 1;
+            _foodChartServiceMock.Setup(x => x.Get(id)).ReturnsAsync((FoodChart)null);
 
-            // Konfigureeri mock, et see tagastaks õiged andmed
-            _foodChartServiceMock.Setup(x => x.List(page, 5, searchModel)).ReturnsAsync(pagedResult);
+            var result = await _controller.Edit(id) as NotFoundResult;
 
-            // Act: kutsume controlleri meetodi
-            var result = await _controller.Index(page, indexModel) as ViewResult;
+            Assert.NotNull(result);
+        }
 
-            // Assert: Veenduge, et vastus oleks korrektne
-            Assert.NotNull(result); // Veenduge, et vastus pole tühi
-            Assert.Equal(indexModel, result.Model); // Veenduge, et tagastatud mudel oleks õige
+        [Fact]
+        public async Task Edit_Should_Return_View_With_Model_When_FoodChart_Was_Found()
+        {
+            int id = 1;
+            var foodChart = new FoodChart { Id = id };
+            _foodChartServiceMock.Setup(x => x.Get(id)).ReturnsAsync(foodChart);
+
+            var result = await _controller.Edit(id) as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Edit");
+            Assert.Equal(foodChart, result.Model);
+        }
+
+        [Fact]
+        public async Task Details_Should_Return_NotFound_When_ID_Is_Missing()
+        {
+            int id = 0;
+
+            var result = await _controller.Details(id) as NotFoundResult;
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Details_Should_Return_NotFound_When_FoodChart_Is_Missing()
+        {
+            int id = 1;
+            _foodChartServiceMock.Setup(x => x.Get(id)).ReturnsAsync((FoodChart)null);
+
+            var result = await _controller.Details(id) as NotFoundResult;
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Details_Should_Return_View_With_Model_When_FoodChart_Was_Found()
+        {
+            int id = 1;
+            var foodChart = new FoodChart { Id = id };
+            _foodChartServiceMock.Setup(x => x.Get(id)).ReturnsAsync(foodChart);
+
+            var result = await _controller.Details(id) as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Details");
+            Assert.Equal(foodChart, result.Model);
+        }
+
+        [Fact]
+        public void Create_Should_Return_View()
+        {
+            var result = _controller.Create() as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Create");
+        }
+
+        [Fact]
+        public async Task Delete_Should_Return_NotFound_When_ID_Is_Missing()
+        {
+            int id = 0;
+
+            var result = await _controller.Delete(id) as NotFoundResult;
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Delete_Should_Return_NotFound_When_FoodChart_Is_Missing()
+        {
+            int id = 1;
+            _foodChartServiceMock.Setup(x => x.Get(id)).ReturnsAsync((FoodChart)null);
+
+            var result = await _controller.Delete(id) as NotFoundResult;
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Delete_Should_Return_View_With_Model_When_FoodChart_Was_Found()
+        {
+            int id = 1;
+            var foodChart = new FoodChart { Id = id };
+            _foodChartServiceMock.Setup(x => x.Get(id)).ReturnsAsync(foodChart);
+
+            var result = await _controller.Delete(id) as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Delete");
+            Assert.Equal(foodChart, result.Model);
         }
     }
 }

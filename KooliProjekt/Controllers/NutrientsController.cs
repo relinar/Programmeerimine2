@@ -10,68 +10,49 @@ namespace KooliProjekt.Controllers
     {
         private readonly INutrientsService _nutrientsService;
 
-        // Constructor for dependency injection
+        // Constructor to inject the service
         public NutrientsController(INutrientsService nutrientsService)
         {
             _nutrientsService = nutrientsService;
         }
 
-        // GET: Nutrients/Index
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 10, NutrientsSearch nutrientsSearch = null)
+        // Index action that returns the view with data
+        public async Task<IActionResult> Index(int page = 1, NutrientsSearch search = null)
         {
-            // If no search parameters, initialize to empty search
-            nutrientsSearch = nutrientsSearch ?? new NutrientsSearch();
+            // Query the service to get the paged nutrient data
+            var pagedResult = await _nutrientsService.List(page, 10, search);
 
-            // Fetch paginated results based on the search criteria
-            var nutrientsResult = await _nutrientsService.List(page, pageSize, nutrientsSearch);
-
-            // Prepare the view model with search and results data
-            var viewModel = new NutrientsIndexModel
+            // Create the model for the view
+            var model = new NutrientsIndexModel
             {
-                Search = nutrientsSearch,
-                Data = nutrientsResult
+                Data = pagedResult,
+                Search = search
             };
 
-            return View(viewModel);
+            // Return the view with the model
+            return View(model);
         }
 
-        // GET: Nutrients/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var nutrient = await _nutrientsService.Get(id.Value);
-            if (nutrient == null)
-            {
-                return NotFound();
-            }
-
-            return View(nutrient);
-        }
-
-        // GET: Nutrients/Create
+        // Create (GET) - Returns the view to create a new nutrient
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Nutrients/Create
+        // Create (POST) - Creates a new nutrient
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name, Carbohydrates, Sugars, Fats")] Nutrients nutrient)
+        public async Task<IActionResult> Create(Nutrients nutrient)
         {
             if (ModelState.IsValid)
             {
-                await _nutrientsService.Save(nutrient);  // Save new nutrient
+                await _nutrientsService.Add(nutrient);
                 return RedirectToAction(nameof(Index));
             }
             return View(nutrient);
         }
 
-        // GET: Nutrients/Edit/5
+        // Edit (GET) - Returns the view to edit an existing nutrient
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -84,13 +65,14 @@ namespace KooliProjekt.Controllers
             {
                 return NotFound();
             }
+
             return View(nutrient);
         }
 
-        // POST: Nutrients/Edit/5
+        // Edit (POST) - Updates an existing nutrient
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id, Name, Carbohydrates, Sugars, Fats")] Nutrients nutrient)
+        public async Task<IActionResult> Edit(int id, Nutrients nutrient)
         {
             if (id != nutrient.Id)
             {
@@ -99,13 +81,13 @@ namespace KooliProjekt.Controllers
 
             if (ModelState.IsValid)
             {
-                await _nutrientsService.Save(nutrient);  // Save updated nutrient
+                await _nutrientsService.Update(nutrient);
                 return RedirectToAction(nameof(Index));
             }
             return View(nutrient);
         }
 
-        // GET: Nutrients/Delete/5
+        // Delete (GET) - Returns the view to confirm deletion
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -122,13 +104,30 @@ namespace KooliProjekt.Controllers
             return View(nutrient);
         }
 
-        // POST: Nutrients/Delete/5
+        // Delete (POST) - Deletes the nutrient
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _nutrientsService.Delete(id);  // Delete nutrient
+            await _nutrientsService.Delete(id);
             return RedirectToAction(nameof(Index));
+        }
+
+        // Details (GET) - Returns the details view for a specific nutrient
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var nutrient = await _nutrientsService.Get(id.Value);
+            if (nutrient == null)
+            {
+                return NotFound();
+            }
+
+            return View(nutrient);
         }
     }
 }
