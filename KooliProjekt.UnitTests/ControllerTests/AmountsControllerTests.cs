@@ -3,6 +3,8 @@ using KooliProjekt.Models;
 using KooliProjekt.Services;
 using Moq;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using KooliProjekt.Data;
@@ -18,6 +20,30 @@ namespace KooliProjekt.UnitTests.ControllerTests
         {
             _amountServiceMock = new Mock<IAmountService>();
             _controller = new AmountsController(_amountServiceMock.Object);
+        }
+
+        [Fact]
+        public async Task Index_Should_Return_View_With_Amounts()
+        {
+            // Arrange: Create some mock data
+            var amounts = new List<Amount>
+            {
+                new Amount { AmountID = 1, NutrientsID = 1, AmountDate = DateTime.Now },  // Correct property names here
+                new Amount { AmountID = 2, NutrientsID = 2, AmountDate = DateTime.Now }   // Same here
+            };
+
+            // Mock the service to return the list of amounts
+            _amountServiceMock.Setup(service => service.GetAmountsAsync()).ReturnsAsync(amounts);
+
+            // Act: Call the Index action
+            var result = await _controller.Index() as ViewResult;
+
+            // Assert: Check if the result is of type ViewResult and contains the expected model
+            Assert.NotNull(result);
+            Assert.Equal(amounts, result.Model);
+
+            // Ensure that the correct view is returned (null means default view, which is "Index")
+            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Index");
         }
 
         [Fact]
@@ -45,7 +71,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         public async Task Edit_Should_Return_View_With_Model_When_Amount_Was_Found()
         {
             int id = 1;
-            var amount = new Amount { AmountID = id };
+            var amount = new Amount { AmountID = id, NutrientsID = 1, AmountDate = DateTime.Now };
             _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync(amount);
 
             var result = await _controller.Edit(id) as ViewResult;
@@ -80,7 +106,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         public async Task Details_Should_Return_View_With_Model_When_Amount_Was_Found()
         {
             int id = 1;
-            var amount = new Amount { AmountID = id };
+            var amount = new Amount { AmountID = id, NutrientsID = 1, AmountDate = DateTime.Now };
             _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync(amount);
 
             var result = await _controller.Details(id) as ViewResult;
@@ -124,7 +150,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         public async Task Delete_Should_Return_View_With_Model_When_Amount_Was_Found()
         {
             int id = 1;
-            var amount = new Amount { AmountID = id };
+            var amount = new Amount { AmountID = id, NutrientsID = 1, AmountDate = DateTime.Now };
             _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync(amount);
 
             var result = await _controller.Delete(id) as ViewResult;

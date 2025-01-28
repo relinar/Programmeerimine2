@@ -20,7 +20,7 @@ namespace KooliProjekt.Controllers
         // Index Action: Display list of amounts
         public async Task<IActionResult> Index()
         {
-            var amounts = await _amountService.GetAmountsAsync(); // Use the service method
+            var amounts = await _amountService.GetAmountsAsync(); // Get list of amounts from service
             return View(amounts);
         }
 

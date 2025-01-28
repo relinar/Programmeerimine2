@@ -21,8 +21,11 @@ namespace KooliProjekt.Controllers
         public async Task<IActionResult> Index(int page = 1, FoodChartIndexModel model = null)
         {
             model = model ?? new FoodChartIndexModel();
-            model.Data = await _foodChartService.List(page, 5, model.Search);  // Fetch paginated results
-            
+
+            // Fetch paginated results
+            model.Data = await _foodChartService.List(page, 5, model.Search);
+
+            // Return the view with the populated model
             return View(model);
         }
 
@@ -56,7 +59,7 @@ namespace KooliProjekt.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _foodChartService.Save(foodChart);  // Save new food chart
+                await _foodChartService.Save(foodChart);  // Save the new food chart
                 return RedirectToAction(nameof(Index));
             }
             return View(foodChart);
@@ -90,7 +93,7 @@ namespace KooliProjekt.Controllers
 
             if (ModelState.IsValid)
             {
-                await _foodChartService.Save(foodChart);  // Save updated food chart
+                await _foodChartService.Save(foodChart);  // Save the updated food chart
                 return RedirectToAction(nameof(Index));
             }
             return View(foodChart);
@@ -118,7 +121,7 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _foodChartService.Delete(id);  // Delete food chart
+            await _foodChartService.Delete(id);  // Delete the food chart
             return RedirectToAction(nameof(Index));
         }
     }
