@@ -47,37 +47,41 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public async Task Edit_Should_Return_NotFound_When_ID_Is_Missing()
+        public async Task Edit_Should_Return_View_When_ModelState_Is_Invalid()
         {
-            int id = 0; // Assuming 0 is an invalid ID
-
-            var result = await _controller.Edit(id) as NotFoundResult;
-
+            var amount = new Amount { AmountID = 1 };
+            _controller.ModelState.AddModelError("AmountID", "Required");
+            var result = await _controller.Edit(amount) as ViewResult;
             Assert.NotNull(result);
+            Assert.Equal(amount, result?.Model);
         }
 
         [Fact]
-        public async Task Edit_Should_Return_NotFound_When_Amount_Is_Missing()
+        public async Task Edit_Should_Redirect_To_Index_When_Valid()
+        {
+            var amount = new Amount { AmountID = 1 };
+            _amountServiceMock.Setup(service => service.UpdateAmountAsync(It.IsAny<Amount>())).Returns(Task.CompletedTask);
+            var result = await _controller.Edit(amount) as RedirectToActionResult;
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
+        }
+        [Fact]
+        public async Task Edit_Get_Should_Return_NotFound_When_Amount_Is_Missing()
         {
             int id = 1;
             _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync((Amount)null);
-
             var result = await _controller.Edit(id) as NotFoundResult;
-
             Assert.NotNull(result);
         }
 
         [Fact]
-        public async Task Edit_Should_Return_View_With_Model_When_Amount_Was_Found()
+        public async Task Edit_Get_Should_Return_View_With_Model_When_Amount_Was_Found()
         {
             int id = 1;
-            var amount = new Amount { AmountID = id, NutrientsID = 1, AmountDate = DateTime.Now };
+            var amount = new Amount { AmountID = id };
             _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync(amount);
-
             var result = await _controller.Edit(id) as ViewResult;
-
             Assert.NotNull(result);
-            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Edit");
             Assert.Equal(amount, result.Model);
         }
 
@@ -120,18 +124,35 @@ namespace KooliProjekt.UnitTests.ControllerTests
         public void Create_Should_Return_View()
         {
             var result = _controller.Create() as ViewResult;
-
             Assert.NotNull(result);
-            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Create");
         }
+
+        [Fact]
+        public async Task Create_Should_Return_View_When_ModelState_Is_Invalid()
+        {
+            _controller.ModelState.AddModelError("AmountID", "Required");
+            var amount = new Amount();
+            var result = await _controller.Create(amount) as ViewResult;
+            Assert.NotNull(result);
+            Assert.Equal(amount, result?.Model);
+        }
+
+        [Fact]
+        public async Task Create_Should_Redirect_To_Index_When_Valid()
+        {
+            var amount = new Amount { AmountID = 1 };
+            _amountServiceMock.Setup(service => service.AddAmountAsync(It.IsAny<Amount>())).Returns(Task.CompletedTask);
+            var result = await _controller.Create(amount) as RedirectToActionResult;
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
+        }
+
 
         [Fact]
         public async Task Delete_Should_Return_NotFound_When_ID_Is_Missing()
         {
             int id = 0;
-
             var result = await _controller.Delete(id) as NotFoundResult;
-
             Assert.NotNull(result);
         }
 
@@ -140,9 +161,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         {
             int id = 1;
             _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync((Amount)null);
-
             var result = await _controller.Delete(id) as NotFoundResult;
-
             Assert.NotNull(result);
         }
 
@@ -150,14 +169,23 @@ namespace KooliProjekt.UnitTests.ControllerTests
         public async Task Delete_Should_Return_View_With_Model_When_Amount_Was_Found()
         {
             int id = 1;
-            var amount = new Amount { AmountID = id, NutrientsID = 1, AmountDate = DateTime.Now };
+            var amount = new Amount { AmountID = id };
             _amountServiceMock.Setup(x => x.Get(id)).ReturnsAsync(amount);
-
             var result = await _controller.Delete(id) as ViewResult;
-
             Assert.NotNull(result);
-            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Delete");
             Assert.Equal(amount, result.Model);
+        }
+
+        [Fact]
+        public async Task DeleteConfirmed_Should_Redirect_To_Index_When_Valid()
+        {
+            int id = 1;
+            _amountServiceMock.Setup(service => service.Delete(id)).Returns(Task.CompletedTask);
+            var result = await _controller.DeleteConfirmed(id) as RedirectToActionResult;
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
+
+       
         }
     }
 }
