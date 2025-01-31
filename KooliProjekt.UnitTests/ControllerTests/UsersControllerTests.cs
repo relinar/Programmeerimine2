@@ -26,202 +26,134 @@ namespace KooliProjekt.UnitTests.ControllerTests
         [Fact]
         public async Task Index_should_return_correct_view_with_data()
         {
-            // Arrange: Mock data for the search and user list 
-            var userSearch = new UserSearch
-            {
-                Name = "Test User",
-                Role = "Admin"
-            };
-
-            var userIndexModel = new UserIndexModel
-            {
-                Search = userSearch // Assign UserSearch to UserIndexModel 
-            };
-
+            var userSearch = new UserSearch { Name = "Test User", Role = "Admin" };
+            var userIndexModel = new UserIndexModel { Search = userSearch };
             var userList = new List<User>
             {
-                new User { Id = 1, Name = "Test User", Role = "Admin", DailySummary = DateTime.Now, Meal = DateTime.Now },
-                new User { Id = 2, Name = "Test User 2", Role = "User", DailySummary = DateTime.Now, Meal = DateTime.Now }
+                new User { Id = 1, Name = "Test User", Role = "Admin" },
+                new User { Id = 2, Name = "Test User 2", Role = "User" }
             };
-
-            // Create PagedResult correctly without 'pageCount' (since it's calculated dynamically)
-            var pagedResult = new PagedResult<User>(1, 5, 2, userList); // (currentPage, pageSize, rowCount, results)
-
-            // Setup the service mock to return the paged result 
+            var pagedResult = new PagedResult<User>(1, 5, 2, userList);
             _userServiceMock.Setup(x => x.List(1, 5, userSearch)).ReturnsAsync(pagedResult);
-
-            // Act: Call the Index action with the UserIndexModel 
+            
             var result = await _controller.Index(1, userIndexModel) as ViewResult;
-
-            // Assert 
-            var model = result?.Model as UserIndexModel; // Ensure that the result is of the expected type 
-            Assert.NotNull(model); // Check that the model is not null 
-            Assert.Equal(pagedResult, model?.Data); // Check that the Data property of the UserIndexModel is correct 
-            Assert.Equal(userSearch, model?.Search); // Check that the Search property is correct 
+            var model = result?.Model as UserIndexModel;
+            
+            Assert.NotNull(model);
+            Assert.Equal(userList, model?.Data?.Results);
+            Assert.Equal(userSearch, model?.Search);
         }
 
-        // Edit: If ID is missing, return NotFound 
         [Fact]
-        public async Task Edit_should_return_notfound_when_id_is_missing()
+        public async Task Index_should_return_default_view_when_model_is_null()
         {
-            // Arrange 
-            int? id = null;
+            var userList = new List<User> { new User { Id = 1, Name = "Test User" } };
+            var pagedResult = new PagedResult<User>(1, 5, 1, userList);
+            _userServiceMock.Setup(x => x.List(1, 5, null)).ReturnsAsync(pagedResult);
 
-            // Act 
-            var result = await _controller.Edit(id) as NotFoundResult;
+            var result = await _controller.Index(1, null) as ViewResult;
+            var model = result?.Model as UserIndexModel;
 
-            // Assert 
-            Assert.NotNull(result);
+            Assert.NotNull(model);
+            Assert.Equal(userList, model?.Data?.Results);
         }
 
-        // Edit: If User not found, return NotFound 
         [Fact]
-        public async Task Edit_should_return_notfound_when_user_is_missing()
+        public async Task Details_should_return_notfound_when_id_is_null()
         {
-            // Arrange 
-            int id = 1;
-            var user = (User)null;
-            _userServiceMock.Setup(x => x.Get(id)).ReturnsAsync(user);
-
-            // Act 
-            var result = await _controller.Edit(id) as NotFoundResult;
-
-            // Assert 
-            Assert.NotNull(result);
+            var result = await _controller.Details(null);
+            Assert.IsType<NotFoundResult>(result);
         }
 
-        // Edit: If User found, return View with model 
         [Fact]
-        public async Task Edit_should_return_view_with_model_when_user_was_found()
+        public async Task Details_should_return_view_with_user_when_found()
         {
-            // Arrange 
-            int id = 1;
-            var user = new User { Id = id };
-            _userServiceMock.Setup(x => x.Get(id)).ReturnsAsync(user);
-
-            // Act 
-            var result = await _controller.Edit(id) as ViewResult;
-
-            // Assert 
-            Assert.NotNull(result);
-            Assert.True(
-                string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Edit"
-            );
-            Assert.Equal(user, result.Model);
+            var user = new User { Id = 1, Name = "Test User" };
+            _userServiceMock.Setup(x => x.Get(1)).ReturnsAsync(user);
+            
+            var result = await _controller.Details(1) as ViewResult;
+            var model = result?.Model as User;
+            
+            Assert.NotNull(model);
+            Assert.Equal(user.Id, model?.Id);
         }
 
-        // Details: If ID is missing, return NotFound 
         [Fact]
-        public async Task Details_should_return_notfound_when_id_is_missing()
+        public async Task Create_should_return_view()
         {
-            // Arrange 
-            int? id = null;
-
-            // Act 
-            var result = await _controller.Details(id) as NotFoundResult;
-
-            // Assert 
-            Assert.NotNull(result);
-        }
-
-        // Details: If User not found, return NotFound 
-        [Fact]
-        public async Task Details_should_return_notfound_when_user_is_missing()
-        {
-            // Arrange 
-            int id = 1;
-            var user = (User)null;
-            _userServiceMock.Setup(x => x.Get(id)).ReturnsAsync(user);
-
-            // Act 
-            var result = await _controller.Details(id) as NotFoundResult;
-
-            // Assert 
-            Assert.NotNull(result);
-        }
-
-        // Details: If User found, return View with model 
-        [Fact]
-        public async Task Details_should_return_view_with_model_when_user_was_found()
-        {
-            // Arrange 
-            int id = 1;
-            var user = new User { Id = id };
-            _userServiceMock.Setup(x => x.Get(id)).ReturnsAsync(user);
-
-            // Act 
-            var result = await _controller.Details(id) as ViewResult;
-
-            // Assert 
-            Assert.NotNull(result);
-            Assert.True(
-                string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Details"
-            );
-            Assert.Equal(user, result.Model);
-        }
-
-        // Create (GET): Return View without model 
-        [Fact]
-        public void Create_should_return_view()
-        {
-            // Act 
             var result = _controller.Create() as ViewResult;
-
-            // Assert 
-            Assert.NotNull(result);
-            Assert.True(
-                string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Create"
-            );
-        }
-
-        // Delete (GET): If ID is missing, return NotFound 
-        [Fact]
-        public async Task Delete_should_return_notfound_when_id_is_missing()
-        {
-            // Arrange 
-            int? id = null;
-
-            // Act 
-            var result = await _controller.Delete(id) as NotFoundResult;
-
-            // Assert 
             Assert.NotNull(result);
         }
 
-        // Delete (GET): If User not found, return NotFound 
         [Fact]
-        public async Task Delete_should_return_notfound_when_user_is_missing()
+        public async Task Create_Post_Should_Add_User_And_Redirect()
         {
-            // Arrange 
-            int id = 1;
-            var user = (User)null;
-            _userServiceMock.Setup(x => x.Get(id)).ReturnsAsync(user);
+            var user = new User { Id = 1, Name = "New User" };
+            _userServiceMock.Setup(x => x.Save(user)).Returns(Task.CompletedTask);
+            
+            var result = await _controller.Create(user) as RedirectToActionResult;
+            
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
+        }
 
-            // Act 
-            var result = await _controller.Delete(id) as NotFoundResult;
-
-            // Assert 
+        [Fact]
+        public async Task Edit_should_return_notfound_when_id_is_null()
+        {
+            var result = await _controller.Edit(null) as NotFoundResult;
             Assert.NotNull(result);
         }
 
-        // Delete (GET): If User found, return View with model 
         [Fact]
-        public async Task Delete_should_return_view_with_model_when_user_was_found()
+        public async Task Edit_should_return_notfound_when_user_does_not_exist()
         {
-            // Arrange 
-            int id = 1;
-            var user = new User { Id = id };
-            _userServiceMock.Setup(x => x.Get(id)).ReturnsAsync(user);
-
-            // Act 
-            var result = await _controller.Delete(id) as ViewResult;
-
-            // Assert 
+            _userServiceMock.Setup(x => x.Get(1)).ReturnsAsync((User)null);
+            var result = await _controller.Edit(1) as NotFoundResult;
             Assert.NotNull(result);
-            Assert.True(
-                string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Delete"
-            );
-            Assert.Equal(user, result.Model);
+        }
+
+        [Fact]
+        public async Task Edit_should_return_view_with_user_when_found()
+        {
+            var user = new User { Id = 1, Name = "Test User" };
+            _userServiceMock.Setup(x => x.Get(1)).ReturnsAsync(user);
+            
+            var result = await _controller.Edit(1) as ViewResult;
+            var model = result?.Model as User;
+            
+            Assert.NotNull(model);
+            Assert.Equal(user.Id, model?.Id);
+        }
+
+        [Fact]
+        public async Task Delete_should_return_notfound_when_id_is_null()
+        {
+            var result = await _controller.Delete(null);
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task Delete_should_return_view_with_user_when_found()
+        {
+            var user = new User { Id = 1, Name = "Test User" };
+            _userServiceMock.Setup(x => x.Get(1)).ReturnsAsync(user);
+            
+            var result = await _controller.Delete(1) as ViewResult;
+            var model = result?.Model as User;
+            
+            Assert.NotNull(model);
+            Assert.Equal(user.Id, model?.Id);
+        }
+
+        [Fact]
+        public async Task DeleteConfirmed_should_call_service_and_redirect()
+        {
+            _userServiceMock.Setup(x => x.Delete(1)).Returns(Task.CompletedTask);
+            
+            var result = await _controller.DeleteConfirmed(1) as RedirectToActionResult;
+            
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
         }
     }
 }

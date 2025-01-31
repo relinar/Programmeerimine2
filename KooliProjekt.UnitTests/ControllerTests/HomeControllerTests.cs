@@ -26,7 +26,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public void Index_should_return_index_view()
+        public void Index_Should_Return_Index_View()
         {
             var result = _controller.Index() as ViewResult;
             Assert.NotNull(result);
@@ -34,14 +34,15 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public void Privacy_should_return_privacy_view()
+        public void Privacy_Should_Return_Privacy_View()
         {
             var result = _controller.Privacy() as ViewResult;
             Assert.NotNull(result);
             Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Privacy");
         }
+
         [Fact]
-        public void Error_should_return_error_view_with_model()
+        public void Error_Should_Return_Error_View_With_Model()
         {
             // Arrange
             var activity = new Activity("TestActivity");
@@ -64,5 +65,22 @@ namespace KooliProjekt.UnitTests.ControllerTests
             Activity.Current = null;
         }
 
+        [Fact]
+        public void Error_Should_Return_Error_View_With_Model_When_Activity_Is_Null()
+        {
+            // Arrange
+            Activity.Current = null;
+
+            // Act
+            var result = _controller.Error() as ViewResult;
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Error");
+
+            var model = result.Model as ErrorViewModel;
+            Assert.NotNull(model);
+            Assert.Equal("test-trace-id", model.RequestId);
+        }
     }
 }

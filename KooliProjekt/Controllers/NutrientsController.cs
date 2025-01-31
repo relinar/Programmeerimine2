@@ -69,12 +69,16 @@ namespace KooliProjekt.Controllers
             return View(nutrient);
         }
 
-        // Edit (POST) - Updates an existing nutrient
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+       
         public async Task<IActionResult> Edit(int id, Nutrients nutrient)
         {
             if (id != nutrient.Id)
+            {
+                return NotFound();
+            }
+
+            var existingNutrient = await _nutrientsService.Get(id);
+            if (existingNutrient == null)
             {
                 return NotFound();
             }
@@ -86,6 +90,7 @@ namespace KooliProjekt.Controllers
             }
             return View(nutrient);
         }
+
 
         // Delete (GET) - Returns the view to confirm deletion
         public async Task<IActionResult> Delete(int? id)

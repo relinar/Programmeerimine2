@@ -5,7 +5,6 @@ using KooliProjekt.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -22,32 +21,37 @@ namespace KooliProjekt.UnitTests.ControllerTests
             _controller = new HealthDatasController(_healthDataServiceMock.Object);
         }
 
+        // Testing the Index method
         [Fact]
-        public async Task Index_should_return_view_with_data()
+        public async Task Index_Should_Return_View_With_Data()
         {
             var healthDataList = new List<HealthData>
             {
                 new HealthData { Id = 1, User = "User 1", Date = "2025-01-01", BloodSugar = 5.6f, Weight = 70.0f },
                 new HealthData { Id = 2, User = "User 2", Date = "2025-02-01", BloodSugar = 5.7f, Weight = 71.0f }
             };
-            _healthDataServiceMock.Setup(service => service.Get(It.IsAny<int>())).ReturnsAsync((int id) => healthDataList.FirstOrDefault(h => h.Id == id));
+
+            _healthDataServiceMock.Setup(service => service.Get(1)).ReturnsAsync(healthDataList[0]);
+            _healthDataServiceMock.Setup(service => service.Get(2)).ReturnsAsync(healthDataList[1]);
 
             var result = await _controller.Index() as ViewResult;
             var model = result?.Model as List<HealthData>;
 
-            Assert.NotNull(model);
-            Assert.Equal(2, model.Count);
+            Assert.NotNull(result);
+            Assert.Equal(healthDataList, model);
         }
 
+        // Testing the Create method (GET)
         [Fact]
-        public void Create_should_return_view()
+        public void Create_Should_Return_View()
         {
             var result = _controller.Create() as ViewResult;
             Assert.NotNull(result);
         }
 
+        // Testing the Create method (POST)
         [Fact]
-        public async Task Create_should_return_view_when_modelstate_is_invalid()
+        public async Task Create_Should_Return_View_When_ModelState_Is_Invalid()
         {
             _controller.ModelState.AddModelError("User", "Required");
             var healthData = new HealthData();
@@ -59,7 +63,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public async Task Create_should_redirect_to_index_when_health_data_is_valid()
+        public async Task Create_Should_Redirect_To_Index_When_HealthData_Is_Valid()
         {
             var healthData = new HealthData { Id = 1, User = "Test User", Date = "2025-01-01", BloodSugar = 5.6f, Weight = 70.0f };
             _healthDataServiceMock.Setup(service => service.Add(It.IsAny<HealthData>())).Returns(Task.CompletedTask);
@@ -70,8 +74,9 @@ namespace KooliProjekt.UnitTests.ControllerTests
             Assert.Equal("Index", result.ActionName);
         }
 
+        // Testing the Edit method (GET)
         [Fact]
-        public async Task Edit_should_return_view_with_model_when_health_data_is_found()
+        public async Task Edit_Should_Return_View_With_Model_When_HealthData_Is_Found()
         {
             var healthData = new HealthData { Id = 1, User = "User 1", Date = "2025-01-01", BloodSugar = 5.6f, Weight = 70.0f };
             _healthDataServiceMock.Setup(service => service.Get(1)).ReturnsAsync(healthData);
@@ -83,7 +88,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public async Task Edit_should_return_notfound_when_health_data_is_missing()
+        public async Task Edit_Should_Return_NotFound_When_HealthData_Is_Missing()
         {
             _healthDataServiceMock.Setup(service => service.Get(It.IsAny<int>())).ReturnsAsync((HealthData)null);
 
@@ -92,8 +97,9 @@ namespace KooliProjekt.UnitTests.ControllerTests
             Assert.NotNull(result);
         }
 
+        // Testing the Edit method (POST)
         [Fact]
-        public async Task Edit_should_return_view_when_modelstate_is_invalid()
+        public async Task Edit_Should_Return_View_When_ModelState_Is_Invalid()
         {
             var healthData = new HealthData { Id = 1, User = "Test User", Date = "2025-01-01", BloodSugar = 5.6f, Weight = 70.0f };
             _controller.ModelState.AddModelError("User", "Required");
@@ -105,7 +111,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public async Task Edit_should_redirect_to_index_when_health_data_is_valid()
+        public async Task Edit_Should_Redirect_To_Index_When_HealthData_Is_Valid()
         {
             var healthData = new HealthData { Id = 1, User = "Test User", Date = "2025-01-01", BloodSugar = 5.6f, Weight = 70.0f };
             _healthDataServiceMock.Setup(service => service.Update(It.IsAny<HealthData>())).Returns(Task.CompletedTask);
@@ -117,7 +123,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public async Task Edit_should_return_notfound_when_id_mismatch()
+        public async Task Edit_Should_Return_NotFound_When_Id_Mismatch()
         {
             var healthData = new HealthData { Id = 2, User = "Test User", Date = "2025-01-01", BloodSugar = 5.6f, Weight = 70.0f };
 
@@ -126,8 +132,9 @@ namespace KooliProjekt.UnitTests.ControllerTests
             Assert.NotNull(result);
         }
 
+        // Testing the Delete method (GET)
         [Fact]
-        public async Task Delete_should_return_notfound_when_health_data_is_missing()
+        public async Task Delete_Should_Return_NotFound_When_HealthData_Is_Missing()
         {
             _healthDataServiceMock.Setup(service => service.Get(It.IsAny<int>())).ReturnsAsync((HealthData)null);
 
@@ -137,7 +144,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public async Task Delete_should_return_view_with_model_when_health_data_is_found()
+        public async Task Delete_Should_Return_View_With_Model_When_HealthData_Is_Found()
         {
             var healthData = new HealthData { Id = 1, User = "User 1", Date = "2025-01-01", BloodSugar = 5.6f, Weight = 70.0f };
             _healthDataServiceMock.Setup(service => service.Get(1)).ReturnsAsync(healthData);
@@ -148,10 +155,13 @@ namespace KooliProjekt.UnitTests.ControllerTests
             Assert.Equal(healthData, result?.Model);
         }
 
+        // Testing the DeleteConfirmed method
         [Fact]
-        public async Task DeleteConfirmed_should_redirect_to_index_when_successful()
+        public async Task DeleteConfirmed_Should_Redirect_To_Index_When_Successful()
         {
-            _healthDataServiceMock.Setup(service => service.Delete(It.IsAny<int>())).Returns(Task.CompletedTask);
+            var healthData = new HealthData { Id = 1, User = "User 1", Date = "2025-01-01", BloodSugar = 5.6f, Weight = 70.0f };
+            _healthDataServiceMock.Setup(service => service.Get(1)).ReturnsAsync(healthData);
+            _healthDataServiceMock.Setup(service => service.Delete(1)).Returns(Task.CompletedTask);
 
             var result = await _controller.DeleteConfirmed(1) as RedirectToActionResult;
 
@@ -160,61 +170,37 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public async Task Edit_should_return_notfoundresult()
+        public async Task DeleteConfirmed_Should_Return_NotFound_When_HealthData_Is_Missing()
         {
-            // Arrange
-            int id = 1;
-            // Act
-            _healthDataServiceMock.Setup(x => x.Get(It.IsAny<int>())).ReturnsAsync((HealthData)null).Verifiable();
-            var result = await _controller.Edit(id);
-            // Assert
+            _healthDataServiceMock.Setup(service => service.Get(It.IsAny<int>())).ReturnsAsync((HealthData)null);
+
+            var result = await _controller.DeleteConfirmed(1) as NotFoundResult;
+
             Assert.NotNull(result);
             Assert.IsType<NotFoundResult>(result);
-            _healthDataServiceMock.VerifyAll();
         }
+
+        // Testing the Details method
         [Fact]
-        public async Task Create_should_return_view_when_ModelState_is_invalid_and_return_correct_view()
-            {
-                // Arrange
-                var healthData = new HealthData();
-                _controller.ModelState.AddModelError("User", "Required");
-
-                // Act
-                var result = await _controller.Create(healthData) as ViewResult;
-
-                // Assert
-                Assert.NotNull(result);
-                Assert.Equal(healthData, result?.Model);
-            }
-
-        [Fact]
-        public async Task Add_should_return_view_when_ModelState_is_invalid()
+        public async Task Details_Should_Return_View_With_Model_When_HealthData_Is_Found()
         {
-            // Arrange
-            var healthData = new HealthData();
-            _controller.ModelState.AddModelError("User", "Required");
+            var healthData = new HealthData { Id = 1, User = "User 1", Date = "2025-01-01", BloodSugar = 5.6f, Weight = 70.0f };
+            _healthDataServiceMock.Setup(service => service.Get(1)).ReturnsAsync(healthData);
 
-            // Act
-            var result = await _controller.Create(healthData) as ViewResult;
+            var result = await _controller.Details(1) as ViewResult;
 
-            // Assert
             Assert.NotNull(result);
             Assert.Equal(healthData, result?.Model);
         }
 
         [Fact]
-        public async Task Add_should_redirect_to_index_when_ModelState_is_valid()
+        public async Task Details_Should_Return_NotFound_When_HealthData_Is_Missing()
         {
-            // Arrange
-            var healthData = new HealthData { Id = 1, User = "Test User", Date = "2025-01-01", BloodSugar = 5.6f, Weight = 70.0f };
-            _healthDataServiceMock.Setup(service => service.Add(It.IsAny<HealthData>())).Returns(Task.CompletedTask);
+            _healthDataServiceMock.Setup(service => service.Get(It.IsAny<int>())).ReturnsAsync((HealthData)null);
 
-            // Act
-            var result = await _controller.Create(healthData) as RedirectToActionResult;
+            var result = await _controller.Details(1) as NotFoundResult;
 
-            // Assert
             Assert.NotNull(result);
-            Assert.Equal("Index", result.ActionName);
         }
     }
 }

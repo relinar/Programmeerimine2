@@ -1,5 +1,4 @@
-﻿// File: Controllers/FoodChartsController.cs
-using KooliProjekt.Data;
+﻿using KooliProjekt.Data;
 using KooliProjekt.Models;
 using KooliProjekt.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -121,6 +120,12 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var foodChart = await _foodChartService.Get(id);
+            if (foodChart == null)
+            {
+                return NotFound();
+            }
+
             await _foodChartService.Delete(id);  // Delete the food chart
             return RedirectToAction(nameof(Index));
         }

@@ -79,13 +79,21 @@ namespace KooliProjekt.Controllers
             return View(healthData);
         }
 
-        // DeleteConfirmed Action: Deletes a health data record (POST)
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _healthDataService.Delete(id);
+            var healthData = await _healthDataService.Get(id);
+            if (healthData == null)
+            {
+                // Log missing HealthData
+                Console.WriteLine($"HealthData with ID {id} not found.");
+                return NotFound();
+            }
+
+            await _healthDataService.Delete(id);  // Delete the health data
             return RedirectToAction("Index");
         }
+
 
         // Details Action: Displays details of a specific health data record
         public async Task<IActionResult> Details(int id)
