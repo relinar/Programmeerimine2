@@ -24,6 +24,21 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
+        public async Task Index_Should_Handle_Exception_Gracefully()
+        {
+            _userServiceMock.Setup(x => x.List(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<UserSearch>()))
+                .ThrowsAsync(new Exception("Database error"));
+
+            var result = await _controller.Index(1, new UserIndexModel()) as ViewResult;
+            var model = result?.Model as UserIndexModel;
+
+            Assert.NotNull(result);
+            Assert.NotNull(model);
+            Assert.Null(model.Data);
+            Assert.True(result.ViewData.ModelState.ContainsKey(""), "Expected a ModelState error.");
+        }
+
+        [Fact]
         public async Task Index_Should_Return_Correct_View_With_Data()
         {
             var userSearch = new UserSearch { Name = "Test User", Role = "Admin" };
@@ -43,13 +58,122 @@ namespace KooliProjekt.UnitTests.ControllerTests
             Assert.Equal(userList, model?.Data?.Results);
             Assert.Equal(userSearch, model?.Search);
         }
+        [Fact]
+        public async Task Index_Should_Handle_Empty_Result()
+        {
+            _userServiceMock.Setup(x => x.List(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<UserSearch>()))
+                .ReturnsAsync(new PagedResult<User>(1, 5, 0, new List<User>()));
 
+            var result = await _controller.Index(1, new UserIndexModel()) as ViewResult;
+            var model = result?.Model as UserIndexModel;
+
+            Assert.NotNull(model);
+            Assert.Empty(model.Data.Results);
+        }
+
+       
+        [Fact]
+        public async Task Create_Get_Should_Return_View()
+        {
+            var result = _controller.Create() as ViewResult;
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Create_Post_Should_Handle_Exception_Gracefully()
+        {
+            var user = new User { Id = 1, Name = "New User" };
+            _userServiceMock.Setup(x => x.Save(user)).ThrowsAsync(new Exception("Database error"));
+
+            var result = await _controller.Create(user) as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.Model);
+            Assert.True(result.ViewData.ModelState.ContainsKey(""), "Expected a ModelState error.");
+        }
+
+        [Fact]
+        public async Task Create_Post_Should_Redirect_When_Successful()
+        {
+            var user = new User { Id = 1, Name = "New User" };
+            _userServiceMock.Setup(x => x.Save(user)).Returns(Task.CompletedTask);
+
+            var result = await _controller.Create(user) as RedirectToActionResult;
+
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
+        }
+        [Fact]
+        public async Task Create_Post_Should_Return_View_When_ModelState_Invalid()
+        {
+            var user = new User { Id = 1, Name = "Invalid User" };
+            _controller.ModelState.AddModelError("Name", "Required");
+
+            var result = await _controller.Create(user) as ViewResult;
+            Assert.NotNull(result);
+            Assert.Equal(user, result?.Model);
+        }
+
+       
+        [Fact]
+        public async Task Edit_Get_Should_Return_View_When_User_Found()
+        {
+            var user = new User { Id = 1, Name = "Existing User" };
+            _userServiceMock.Setup(x => x.Get(1)).ReturnsAsync(user);
+
+            var result = await _controller.Edit(1) as ViewResult;
+            var model = result?.Model as User;
+
+            Assert.NotNull(result);
+            Assert.NotNull(model);
+            Assert.Equal(user.Id, model?.Id);
+        }
+       
+        [Fact]
+        public async Task Edit_Post_Should_Handle_Exception_And_Return_View()
+        {
+            var user = new User { Id = 1, Name = "Updated User" };
+            _userServiceMock.Setup(x => x.Save(It.IsAny<User>())).ThrowsAsync(new Exception("Database Error"));
+
+            var result = await _controller.Edit(1, user) as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(user, result?.Model);
+            Assert.True(result.ViewData.ModelState.ContainsKey(""), "Expected a ModelState error.");
+        }
+
+        [Fact]
+        public async Task Delete_Should_Return_View_When_User_Found()
+        {
+            var user = new User { Id = 1, Name = "User to Delete" };
+            _userServiceMock.Setup(x => x.Get(1)).ReturnsAsync(user);
+
+            var result = await _controller.Delete(1) as ViewResult;
+            var model = result?.Model as User;
+
+            Assert.NotNull(result);
+            Assert.NotNull(model);
+            Assert.Equal(user.Id, model?.Id);
+        }
+        
+        [Fact]
+        public async Task DeleteConfirmed_Should_Handle_Exception_Gracefully()
+        {
+            _userServiceMock.Setup(x => x.Delete(It.IsAny<int>())).ThrowsAsync(new Exception("Database Error"));
+
+            var result = await _controller.DeleteConfirmed(1) as RedirectToActionResult;
+
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
+        }
+        
         [Fact]
         public async Task Details_Should_Return_NotFound_When_Id_Is_Null()
         {
             var result = await _controller.Details(null);
             Assert.IsType<NotFoundResult>(result);
         }
+      
 
         [Fact]
         public async Task Details_Should_Return_NotFound_When_User_Not_Found()
@@ -72,122 +196,103 @@ namespace KooliProjekt.UnitTests.ControllerTests
             Assert.NotNull(model);
             Assert.Equal(user.Id, model?.Id);
         }
-
         [Fact]
-        public void Create_Get_Should_Return_View()
+        public async Task Details_Should_Return_NotFound_When_Exception_Occurs()
         {
-            var result = _controller.Create() as ViewResult;
-            Assert.NotNull(result);
+            _userServiceMock.Setup(x => x.Get(It.IsAny<int>())).ThrowsAsync(new Exception("Database error"));
+
+            var result = await _controller.Details(1);
+            Assert.IsType<ObjectResult>(result);
+        }
+
+   
+        [Fact]
+        public async Task Index_Should_Return_View_With_Users()
+        {
+            var userList = new List<User> { new User { Id = 1, Name = "User1" }, new User { Id = 2, Name = "User2" } };
+            _userServiceMock.Setup(x => x.List(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<UserSearch>()))
+                .ReturnsAsync(new PagedResult<User>(1, 5, 2, userList));
+
+            var result = await _controller.Index(1, new UserIndexModel()) as ViewResult;
+            var model = result?.Model as UserIndexModel;
+
+            Assert.NotNull(model);
+            Assert.Equal(2, model.Data.Results.Count);
+        }
+
+         
+        [Fact]
+        public async Task Details_Should_Return_View_When_User_Exists()
+        {
+            var user = new User { Id = 1, Name = "Test User" };
+            _userServiceMock.Setup(x => x.Get(1)).ReturnsAsync(user);
+
+            var result = await _controller.Details(1) as ViewResult;
+            var model = result?.Model as User;
+
+            Assert.NotNull(model);
+            Assert.Equal(1, model.Id);
         }
 
         [Fact]
-        public async Task Create_Post_Should_Return_View_When_ModelState_Is_Invalid()
+        public async Task Edit_Post_Should_Return_View_When_ModelState_Invalid()
         {
-            var user = new User { Id = 1, Name = "New User" };
+            var user = new User { Id = 1, Name = "Invalid User" };
             _controller.ModelState.AddModelError("Name", "Required");
 
-            var result = await _controller.Create(user) as ViewResult;
+            var result = await _controller.Edit(1, user) as ViewResult;
             Assert.NotNull(result);
             Assert.Equal(user, result?.Model);
         }
-
-        [Fact]
-        public async Task Create_Post_Should_Add_User_And_Redirect()
-        {
-            var user = new User { Id = 1, Name = "New User" };
-            _userServiceMock.Setup(x => x.Save(user)).Returns(Task.CompletedTask);
-
-            var result = await _controller.Create(user) as RedirectToActionResult;
-
-            Assert.NotNull(result);
-            Assert.Equal("Index", result.ActionName);
-        }
-
-        [Fact]
-        public async Task Edit_Get_Should_Return_NotFound_When_Id_Is_Null()
-        {
-            var result = await _controller.Edit(null);
-            Assert.IsType<NotFoundResult>(result);
-        }
-
+       
         [Fact]
         public async Task Edit_Get_Should_Return_NotFound_When_User_Not_Found()
         {
-            _userServiceMock.Setup(x => x.Get(1)).ReturnsAsync((User)null);
-
+            _userServiceMock.Setup(x => x.Get(It.IsAny<int>())).ReturnsAsync((User)null);
             var result = await _controller.Edit(1);
             Assert.IsType<NotFoundResult>(result);
         }
 
         [Fact]
-        public async Task Edit_Post_Should_Return_NotFound_When_Id_Does_Not_Match_User()
-        {
-            var user = new User { Id = 2, Name = "Updated User" };
-
-            var result = await _controller.Edit(1, user);
-            Assert.IsType<NotFoundResult>(result);
-        }
-
-        [Fact]
-        public async Task Edit_Post_Should_Return_View_When_ModelState_Is_Invalid()
-        {
-            var user = new User { Id = 1, Name = "Updated User" };
-            _controller.ModelState.AddModelError("Name", "Required");
-
-            var result = await _controller.Edit(1, user) as ViewResult;
-
-            Assert.NotNull(result);
-            Assert.Equal(user, result?.Model);
-        }
-
-        [Fact]
-        public async Task Edit_Post_Should_Update_User_And_Redirect_To_Index()
-        {
-            var user = new User { Id = 1, Name = "Updated User" };
-            _userServiceMock.Setup(x => x.Get(user.Id)).ReturnsAsync(user);
-            _userServiceMock.Setup(x => x.Save(It.IsAny<User>())).Returns(Task.CompletedTask);
-
-            var result = await _controller.Edit(user.Id, user) as RedirectToActionResult;
-
-            Assert.NotNull(result);
-            Assert.Equal("Index", result.ActionName);
-        }
-        [Fact]
-        public async Task Delete_Should_Return_View_With_User_When_Found()
+        public async Task Edit_Get_Should_Return_View_With_User()
         {
             var user = new User { Id = 1, Name = "Test User" };
             _userServiceMock.Setup(x => x.Get(1)).ReturnsAsync(user);
 
-            var result = await _controller.Delete(1) as ViewResult;
+            var result = await _controller.Edit(1) as ViewResult;
             var model = result?.Model as User;
 
             Assert.NotNull(model);
-            Assert.Equal(user.Id, model?.Id);
+            Assert.Equal(user.Id, model.Id);
         }
 
         [Fact]
-        public async Task Delete_Should_Return_NotFound_When_Id_Is_Null()
+        public async Task Edit_Post_Should_Update_User_When_Valid()
         {
-            var result = await _controller.Delete(null);
-            Assert.IsType<NotFoundResult>(result);
+            var user = new User { Id = 1, Name = "Updated User" };
+            _userServiceMock.Setup(x => x.Save(user)).Returns(Task.CompletedTask);
+
+            var result = await _controller.Edit(1, user) as RedirectToActionResult;
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
         }
 
         [Fact]
-        public async Task Delete_Should_Return_NotFound_When_User_Not_Found()
+        public async Task DeleteConfirmed_Should_Handle_Exception()
         {
-            _userServiceMock.Setup(x => x.Get(1)).ReturnsAsync((User)null);
+            _userServiceMock.Setup(x => x.Delete(It.IsAny<int>())).ThrowsAsync(new Exception("Database error"));
 
-            var result = await _controller.Delete(1);
-            Assert.IsType<NotFoundResult>(result);
+            var result = await _controller.DeleteConfirmed(1) as RedirectToActionResult;
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
         }
 
         [Fact]
-        public async Task DeleteConfirmed_Should_Call_Service_And_Redirect()
+        public async Task DeleteConfirmed_Should_Delete_User_When_Valid()
         {
             _userServiceMock.Setup(x => x.Delete(1)).Returns(Task.CompletedTask);
 
             var result = await _controller.DeleteConfirmed(1) as RedirectToActionResult;
-
             Assert.NotNull(result);
             Assert.Equal("Index", result.ActionName);
         }

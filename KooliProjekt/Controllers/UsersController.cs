@@ -1,126 +1,141 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using KooliProjekt.Data;
 using KooliProjekt.Services;
 using KooliProjekt.Models;
+using KooliProjekt.Data;
 
 namespace KooliProjekt.Controllers
 {
     public class UsersController : Controller
     {
-        private readonly IUserService _userService;  // Keep this as IUserService
+        private readonly IUserService _userService;
 
-        // Constructor to inject the IUserService
-        public UsersController(IUserService userService)  // Change to inject IUserService
+        public UsersController(IUserService userService)
         {
-            _userService = userService;  // Correct assignment
+            _userService = userService;
         }
 
-        // GET: Users
         public async Task<IActionResult> Index(int page = 1, UserIndexModel model = null)
         {
-            model = model ?? new UserIndexModel();
-            model.Data = await _userService.List(page, 5, model.Search);  // Use IUserService's List method
-
-            return View(model);
+            try
+            {
+                model ??= new UserIndexModel();
+                model.Data = await _userService.List(page, 5, model.Search);
+                return View(model);
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "An error occurred while loading users.");
+                return View(new UserIndexModel { Data = null, Search = null });
+            }
         }
 
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var user = await _userService.Get(id.Value);  // Use IUserService's Get method
-            if (user == null)
+            try
             {
-                return NotFound();
+                var user = await _userService.Get(id.Value);
+                if (user == null) return NotFound();
+                return View(user);
             }
-
-            return View(user);
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal server error.");
+            }
         }
 
-        // GET: TodoLists/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: TodoLists/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title")] User user)
+        public async Task<IActionResult> Create([Bind("Id,Name,Role")] User user)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(user);
+
+            try
             {
-                await _userService.Save(user);  // Use IUserService's Save method
+                await _userService.Save(user);
                 return RedirectToAction(nameof(Index));
             }
-            return View(user);
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "An error occurred while saving the user.");
+                return View(user);
+            }
         }
 
-        // GET: TodoLists/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var todoList = await _userService.Get(id.Value);  // Use IUserService's Get method
-            if (todoList == null)
+            try
             {
-                return NotFound();
+                var user = await _userService.Get(id.Value);
+                if (user == null) return NotFound();
+                return View(user);
             }
-            return View(todoList);
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal server error.");
+            }
         }
 
-        // POST: TodoLists/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Role")] User user)
         {
-            if (id != user.Id)
-            {
-                return NotFound();
-            }
+            if (id != user.Id) return NotFound();
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(user);
+
+            try
             {
-                await _userService.Save(user);  // Use IUserService's Save method
+                await _userService.Save(user);
                 return RedirectToAction(nameof(Index));
             }
-            return View(user);
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "An error occurred while updating the user.");
+                return View(user);
+            }
         }
 
-        // GET: TodoLists/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var todoList = await _userService.Get(id.Value);  // Use IUserService's Get method
-            if (todoList == null)
+            try
             {
-                return NotFound();
+                var user = await _userService.Get(id.Value);
+                if (user == null) return NotFound();
+                return View(user);
             }
-
-            return View(todoList);
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal server error.");
+            }
         }
 
-        // POST: TodoLists/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _userService.Delete(id);  // Use IUserService's Delete method
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _userService.Delete(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "An error occurred while deleting the user.");
+                return RedirectToAction(nameof(Index));
+            }
         }
     }
 }
