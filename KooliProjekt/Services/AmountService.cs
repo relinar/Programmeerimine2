@@ -1,97 +1,79 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Data.Repositories;
 using KooliProjekt.Models;
 using KooliProjekt.Search;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
 {
     public class AmountService : IAmountService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
-        // Constructor to inject the ApplicationDbContext
-        public AmountService(ApplicationDbContext context)
+        // Constructor injection for UnitOfWork
+        public AmountService(IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         // Get all Amounts
         public async Task<List<Amount>> GetAmountsAsync()
         {
-            return await _context.amount.ToListAsync(); // Fetch all Amounts
+            return await _unitOfWork.Amounts.GetAllAsync();  // Use UnitOfWork to get all Amounts
         }
 
-        // Get a single Amount by id
+        // Get Amount by Id
         public async Task<Amount> Get(int id)
         {
-            return await _context.amount
-                .FirstOrDefaultAsync(a => a.AmountID == id); // Fetch the Amount by id
+            return await _unitOfWork.Amounts.GetAsync(id);  // Use UnitOfWork to get Amount by id
         }
 
         // Add a new Amount
-        public async Task AddAmountAsync(Amount item)
+        public async Task AddAmountAsync(Amount amount)
         {
-            _context.Add(item);  // Adds a new Amount to the DbSet
-            await _context.SaveChangesAsync();  // Save changes to the database
+            await _unitOfWork.Amounts.SaveAsync(amount);  // Use UnitOfWork to save Amount
         }
 
         // Update an existing Amount
-        public async Task UpdateAmountAsync(Amount item)
+        public async Task UpdateAmountAsync(Amount amount)
         {
-            _context.Update(item);  // Marks the Amount as modified
-            await _context.SaveChangesAsync();  // Save changes to the database
+            await _unitOfWork.Amounts.SaveAsync(amount);  // Use UnitOfWork to save (update) Amount
         }
 
-        public async Task Save(Amount amount)
-        {
-            if(amount.AmountID == 0)
-            {
-                _context.Add(amount);
-            }
-            else
-            {
-                _context.Update(amount);
-            }
-
-            await _context.SaveChangesAsync();
-        }
-
-        // Delete an Amount by id
+        // Delete an Amount by Id
         public async Task Delete(int id)
         {
-            var amount = await _context.amount.FindAsync(id); // Find the Amount by id
-            if (amount != null)
-            {
-                _context.amount.Remove(amount);  // Remove the Amount from the DbSet
-                await _context.SaveChangesAsync();  // Save changes to the database
-            }
+            await _unitOfWork.Amounts.DeleteAsync(id);  // Use UnitOfWork to delete Amount by id
         }
 
-        // List Amounts with Pagination and Search functionality
+        // Save (either Add or Update) Amount
+        public async Task Save(Amount amount)
+        {
+            await _unitOfWork.Amounts.SaveAsync(amount);  // Use UnitOfWork to save Amount
+        }
+
+        // List Amounts with pagination and search functionality
         public async Task<PagedResult<Amount>> List(int page, int pageSize, amountSearch search)
         {
-            var query = _context.amount.AsQueryable();
+            var query = _unitOfWork.Amounts.AsQueryable();  // Assuming Amounts has AsQueryable() method
 
-            // Apply filters based on search parameters
-            if (search.AmountID.HasValue)
+            // Apply search filters here (based on the search object)
+
+            var totalCount = await query.CountAsync();
+            var results = await query
+                                .Skip((page - 1) * pageSize)
+                                .Take(pageSize)
+                                .ToListAsync();
+
+            return new PagedResult<Amount>
             {
-                query = query.Where(a => a.AmountID == search.AmountID);
-            }
-
-            if (search.NutrientsID.HasValue)
-            {
-                query = query.Where(a => a.NutrientsID == search.NutrientsID);
-            }
-
-            if (search.AmountDate.HasValue)
-            {
-                query = query.Where(a => a.AmountDate.Date == search.AmountDate.Value.Date);  // Date comparison to ignore time part
-            }
-
-            return await query.GetPagedAsync(page, pageSize);
+                Results = results,
+                RowCount = totalCount,
+                CurrentPage = page,
+                PageCount = (int)Math.Ceiling((double)totalCount / pageSize)
+            };
         }
     }
 }

@@ -1,43 +1,35 @@
-﻿// File: Services/FoodChartService.cs
-using KooliProjekt.Data;
+﻿using KooliProjekt.Data;
 using KooliProjekt.Data.Repositories;
 using KooliProjekt.Models;
-using System.Threading.Tasks;
+using KooliProjekt.Services;
 
-namespace KooliProjekt.Services
+public class FoodChartService : IFoodChartService
 {
-    public class FoodChartService : IFoodChartService
+    private readonly IUnitOfWork _unitOfWork;
+
+    // Constructor injection
+    public FoodChartService(IUnitOfWork unitOfWork)
     {
-        private readonly IFoodChartRepository _foodChartRepository;
+        _unitOfWork = unitOfWork;
+    }
 
-        // Constructor injection
-        public FoodChartService(IFoodChartRepository foodChartRepository)
-        {
-            _foodChartRepository = foodChartRepository;
-        }
+    public async Task<PagedResult<FoodChart>> List(int page, int pageSize, FoodChartSearch search)
+    {
+        return await _unitOfWork.FoodCharts.List(page, pageSize, search);  // Use UnitOfWork to access FoodCharts repository
+    }
 
-        // List method that gets paginated results from repository
-        public async Task<PagedResult<FoodChart>> List(int page, int pageSize, FoodChartSearch search)
-        {
-            return await _foodChartRepository.List(page, pageSize, search);
-        }
+    public async Task<FoodChart> Get(int id)
+    {
+        return await _unitOfWork.FoodCharts.Get(id);  // Use UnitOfWork to access FoodCharts repository
+    }
 
-        // Method to get a specific FoodChart by ID
-        public async Task<FoodChart> Get(int id)
-        {
-            return await _foodChartRepository.Get(id);
-        }
+    public async Task Save(FoodChart foodChart)
+    {
+        await _unitOfWork.FoodCharts.Save(foodChart);  // Use UnitOfWork to access FoodCharts repository
+    }
 
-        // Save method to insert or update a FoodChart
-        public async Task Save(FoodChart foodChart)
-        {
-            await _foodChartRepository.Save(foodChart);
-        }
-
-        // Delete method to remove a FoodChart by ID
-        public async Task Delete(int id)
-        {
-            await _foodChartRepository.Delete(id);  
-        }
+    public async Task Delete(int id)
+    {
+        await _unitOfWork.FoodCharts.Delete(id);  // Use UnitOfWork to access FoodCharts repository
     }
 }
