@@ -1,4 +1,6 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
+using KooliProjekt.Search;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,11 +8,13 @@ namespace KooliProjekt.Data.Repositories
 {
     public interface IHealthDataRepository
     {
-        Task<HealthData> GetAsync(int id);  // Asynchronous Get method
-        Task<List<HealthData>> ListAsync(); // Asynchronous List method
-        Task AddAsync(HealthData healthData); // Asynchronous Add method
-        Task DeleteAsync(int id); // Asynchronous Delete method
-        Task UpdateAsync(HealthData healthData); // Asynchronous Update method
-        Task SaveAsync(); // Asynchronous Save method (typically to save changes)
+        Task<PagedResult<HealthData>> GetPagedAsync(int page, int pageSize, HealthDataSearch searchModel);
+        Task<HealthData> GetByIdAsync(int id);
+        Task<List<HealthData>> GetAllAsync();
+        Task AddAsync(HealthData healthData);
+        Task DeleteAsync(HealthData healthData);
+        Task UpdateAsync(HealthData healthData);
+        Task Update(HealthData healthData); // Add this line
+
     }
 }

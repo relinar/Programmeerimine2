@@ -1,10 +1,8 @@
-﻿// File: Controllers/HealthDatasController.cs
-using KooliProjekt.Data;
-using KooliProjekt.Models;
+﻿using System.Threading.Tasks;
 using KooliProjekt.Services;
 using KooliProjekt.Search;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+using KooliProjekt.Data;
 
 namespace KooliProjekt.Controllers
 {
@@ -20,13 +18,30 @@ namespace KooliProjekt.Controllers
         // GET: HealthDatas/Index
         public async Task<IActionResult> Index(int page = 1, HealthDataSearch searchModel = null)
         {
-            searchModel = searchModel ?? new HealthDataSearch(); // If no search model is passed, create a new one
-
-            // Fetch paginated health data based on the search model
+            searchModel ??= new HealthDataSearch(); // Initialize search model if null
             var pagedResult = await _healthDataService.List(page, 5, searchModel);
-
-            // Return the view with the paged results
             return View(pagedResult);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(HealthData healthData)
+        {
+            if (ModelState.IsValid)
+            {
+                await _healthDataService.AddAsync(healthData);
+                await _healthDataService.SaveAsync(); // No arguments
+                return RedirectToAction(nameof(Index));
+            }
+            return View(healthData);
+        }
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            await _healthDataService.DeleteAsync(id);
+            await _healthDataService.SaveAsync(); // No arguments
+            return RedirectToAction(nameof(Index));
         }
     }
 }

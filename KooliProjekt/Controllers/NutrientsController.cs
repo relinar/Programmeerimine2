@@ -1,40 +1,39 @@
-﻿using KooliProjekt.Data;
-using KooliProjekt.Data.Repositories;
+﻿using KooliProjekt.Data.Repositories;
+using KooliProjekt.Services;
 using KooliProjekt.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using KooliProjekt.Data;
 
 namespace KooliProjekt.Controllers
 {
     public class NutrientsController : Controller
     {
-        private readonly INutrientsRepository _nutrientsRepository;
+        private readonly INutrientsService _nutrientsService;
+        private readonly INutrientsRepository _nutrientsRepository; // Declare the repository field
 
-        // Constructor for dependency injection
-        public NutrientsController(INutrientsRepository nutrientsRepository)
+        // Inject both service and repository via constructor
+        public NutrientsController(INutrientsService nutrientsService, INutrientsRepository nutrientsRepository)
         {
-            _nutrientsRepository = nutrientsRepository;
+            _nutrientsService = nutrientsService;
+            _nutrientsRepository = nutrientsRepository; // Initialize the repository
         }
 
-        // GET: Nutrients/Index
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 10, NutrientsSearch nutrientsSearch = null)
+        // Example action methods using the repository
+        public async Task<IActionResult> Index(int page = 1)
         {
-            // If no search parameters, initialize to empty search
-            nutrientsSearch = nutrientsSearch ?? new NutrientsSearch();
-
-            // Fetch paginated results based on the search criteria
-            var nutrientsResult = await _nutrientsRepository.List(page, pageSize, nutrientsSearch);
-
-            // Prepare the view model with search and results data
-            var viewModel = new NutrientsIndexModel
+            var search = new NutrientsSearch
             {
-                Search = nutrientsSearch,
-                Data = nutrientsResult
+                Carbohydrates = "10",
+                Fats = "3",
+                Name = "Test Nutrient",
+                Sugars = "5"
             };
 
-            return View(viewModel);
+            // Now, you can use _nutrientsRepository here if needed
+            var pagedResult = await _nutrientsService.List(page, 10, search);
+            return View(pagedResult); // Pass the result to the view
         }
-
         // GET: Nutrients/Details/5
         public async Task<IActionResult> Details(int? id)
         {

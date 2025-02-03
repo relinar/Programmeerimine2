@@ -1,47 +1,50 @@
 ﻿using KooliProjekt.Data;
 using KooliProjekt.Data.Repositories;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using KooliProjekt.Models;
+using KooliProjekt.Search;
+using KooliProjekt.Services;
 
-namespace KooliProjekt.Services
+public class HealthDataService : IHealthDataService
 {
-    public class HealthDataService : IHealthDataService
+    private readonly IUnitOfWork _unitOfWork;
+
+    public HealthDataService(IUnitOfWork unitOfWork)
     {
-        private readonly IHealthDataRepository _repository;
+        _unitOfWork = unitOfWork;
+    }
 
-        public HealthDataService(IHealthDataRepository repository)
-        {
-            _repository = repository;
-        }
+    public async Task<PagedResult<HealthData>> List(int page, int pageSize, HealthDataSearch searchModel)
+    {
+        return await _unitOfWork.HealthDataRepository.GetPagedAsync(page, pageSize, searchModel);
+    }
 
-        public async Task<HealthData> Get(int id)
-        {
-            return await _repository.GetAsync(id);
-        }
+    public async Task<HealthData> Get(int id)
+    {
+        return await _unitOfWork.HealthDataRepository.GetByIdAsync(id);
+    }
 
-        public async Task<List<HealthData>> List()
-        {
-            return await _repository.ListAsync();
-        }
+    public async Task AddAsync(HealthData healthData)
+    {
+        await _unitOfWork.HealthDataRepository.AddAsync(healthData);
+    }
 
-        public async Task AddAsync(HealthData healthData)
-        {
-            await _repository.AddAsync(healthData);
-        }
+    public async Task UpdateAsync(HealthData healthData)
+    {
+        _unitOfWork.HealthDataRepository.Update(healthData);
+    }
 
-        public async Task Delete(int id)
+    public async Task DeleteAsync(int id)
+    {
+        var healthData = await _unitOfWork.HealthDataRepository.GetByIdAsync(id);
+        if (healthData != null)
         {
-            await _repository.DeleteAsync(id);
+            await _unitOfWork.HealthDataRepository.DeleteAsync(healthData);
         }
+    }
 
-        public async Task UpdateAsync(HealthData healthData)
-        {
-            await _repository.UpdateAsync(healthData);
-        }
 
-        public async Task Save(HealthData healthData)
-        {
-            await _repository.SaveAsync();
-        }
+    public async Task SaveAsync()
+    {
+        await _unitOfWork.CommitAsync();
     }
 }

@@ -1,16 +1,17 @@
 ﻿using KooliProjekt.Data;
-using System.Collections.Generic;
+using KooliProjekt.Models;
+using KooliProjekt.Search;
 using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
 {
     public interface IHealthDataService
     {
+        Task<PagedResult<HealthData>> List(int page, int pageSize, HealthDataSearch searchModel);
         Task<HealthData> Get(int id);
-        Task<List<HealthData>> List();
         Task AddAsync(HealthData healthData);
-        Task Delete(int id);
         Task UpdateAsync(HealthData healthData);
-        Task Save(HealthData healthData);
+        Task DeleteAsync(int id);
+        Task SaveAsync();
     }
 }
