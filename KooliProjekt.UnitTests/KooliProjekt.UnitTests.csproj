@@ -10,8 +10,11 @@
 
   <ItemGroup>
     <Compile Remove="BuildReports\Coverage\**" />
+    <Compile Remove="ServciceTests\**" />
     <EmbeddedResource Remove="BuildReports\Coverage\**" />
+    <EmbeddedResource Remove="ServciceTests\**" />
     <None Remove="BuildReports\Coverage\**" />
+    <None Remove="ServciceTests\**" />
   </ItemGroup>
 
   <ItemGroup>
