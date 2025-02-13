@@ -15,14 +15,25 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        // Implementing List method (pagination)
         public async Task<PagedResult<FoodChart>> List(int page, int pageSize, FoodChartSearch search)
         {
-            // Assuming GetPagedAsync is an extension method for paginated results
-            return await _context.food_Chart.GetPagedAsync(page, pageSize);
+            // Query to fetch data (apply search filtering if needed)
+            var query = _context.food_Chart.AsQueryable();
+
+            // Get the total count of records
+            var totalCount = await query.CountAsync();
+
+            // Calculate the page count (if no records, set it to 0)
+            var pageCount = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            // Get the paginated results
+            var results = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            // Create and return the PagedResult
+            return new PagedResult<FoodChart>(page, pageSize, totalCount, results);
         }
 
-        // Implementing Get method
+
         public async Task<FoodChart> Get(int id)
         {
             return await _context.food_Chart.FirstOrDefaultAsync(m => m.Id == id);
@@ -47,15 +58,13 @@ namespace KooliProjekt.Services
         public async Task Delete(int id)
         {
             var foodChart = await _context.food_Chart.FindAsync(id);
-            if (foodChart != null)
+            if (foodChart == null)
             {
-                _context.food_Chart.Remove(foodChart);
-                await _context.SaveChangesAsync();
+                return;
             }
-            else
-            {
-                throw new KeyNotFoundException($"FoodChart with id {id} not found.");
-            }
+
+            _context.food_Chart.Remove(foodChart);
+            await _context.SaveChangesAsync();
         }
     }
 

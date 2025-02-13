@@ -47,7 +47,7 @@ namespace KooliProjekt.Services
 
         public async Task Save(Amount amount)
         {
-            if(amount.AmountID == 0)
+            if (amount.AmountID == 0)
             {
                 _context.Add(amount);
             }
@@ -69,8 +69,6 @@ namespace KooliProjekt.Services
                 await _context.SaveChangesAsync();  // Save changes to the database
             }
         }
-
-        // List Amounts with Pagination and Search functionality
         public async Task<PagedResult<Amount>> List(int page, int pageSize, amountSearch search)
         {
             var query = _context.amount.AsQueryable();
@@ -88,10 +86,21 @@ namespace KooliProjekt.Services
 
             if (search.AmountDate.HasValue)
             {
-                query = query.Where(a => a.AmountDate.Date == search.AmountDate.Value.Date);  // Date comparison to ignore time part
+                query = query.Where(a => a.AmountDate.Date == search.AmountDate.Value.Date);  // Date comparison to ignore time
             }
 
-            return await query.GetPagedAsync(page, pageSize);
+            // Get the total count of results
+            var rowCount = await query.CountAsync();
+
+            // Get the paged results
+            var results = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            // Create and return the PagedResult
+            return new PagedResult<Amount>(page, pageSize, rowCount, results);
         }
+
+
     }
 }
+    
+
