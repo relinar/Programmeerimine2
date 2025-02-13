@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KooliProjekt.Data;
 using KooliProjekt.Models;
+using KooliProjekt.Search;
 using KooliProjekt.Services;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -61,7 +62,6 @@ namespace KooliProjekt.UnitTests.ServiceTests
             Assert.NotNull(updatedUser);
             Assert.Equal("Jane Doe", updatedUser.Name);
         }
- 
 
         [Fact]
         public async Task Get_should_return_null_for_non_existing_user()
@@ -118,6 +118,48 @@ namespace KooliProjekt.UnitTests.ServiceTests
         }
 
         [Fact]
+        public async Task List_should_return_filtered_users_by_name_and_role()
+        {
+            // Arrange
+            var service = new UserService(DbContext);
+
+            var user1 = new User
+            {
+                Name = "User1",
+                Role = "Admin",
+                DailySummary = DateTime.Now,
+                Meal = DateTime.Now
+            };
+            var user2 = new User
+            {
+                Name = "User2",
+                Role = "User",
+                DailySummary = DateTime.Now,
+                Meal = DateTime.Now
+            };
+            var user3 = new User
+            {
+                Name = "User3",
+                Role = "Admin",
+                DailySummary = DateTime.Now,
+                Meal = DateTime.Now
+            };
+
+            DbContext.User.AddRange(user1, user2, user3);
+            await DbContext.SaveChangesAsync();
+
+            // Act
+            var search = new UserSearch { Name = "User", Role = "Admin" };
+            var result = await service.List(1, 2, search); // Page 1, size 2 with filter
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Results.Count()); // Ensure that the result contains the filtered users
+            Assert.Contains(result.Results, u => u.Name == "User1");
+            Assert.Contains(result.Results, u => u.Name == "User3");
+        }
+
+        [Fact]
         public async Task List_should_return_empty_for_empty_page()
         {
             // Arrange
@@ -133,5 +175,7 @@ namespace KooliProjekt.UnitTests.ServiceTests
             // Assert
             Assert.Empty(result.Results); // Ensure no items are returned for an empty page
         }
+
+  
     }
 }
