@@ -28,8 +28,7 @@ namespace KooliProjekt.UnitTests.ServiceTests
 
             _amountService = new AmountService(_unitOfWorkMock.Object);
         }
-       
-       
+
         [Fact]
         public async Task GetAmountsAsync_ShouldReturnCorrectAmounts()
         {
@@ -127,5 +126,39 @@ namespace KooliProjekt.UnitTests.ServiceTests
             // Assert
             _repositoryMock.Verify(r => r.SaveAsync(amount), Times.Once);
         }
+        [Fact]
+        public async Task List_ShouldReturnPagedAmounts_WithCorrectPagination()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using var context = new ApplicationDbContext(options);
+
+            var amounts = new List<Amount>
+    {
+        new Amount { AmountID = 1, NutrientsID = 101, AmountDate = DateTime.Now },
+        new Amount { AmountID = 2, NutrientsID = 102, AmountDate = DateTime.Now },
+        new Amount { AmountID = 3, NutrientsID = 103, AmountDate = DateTime.Now },
+        new Amount { AmountID = 4, NutrientsID = 104, AmountDate = DateTime.Now }
+    };
+
+            // Seed the in-memory database
+            context.amount.AddRange(amounts);
+            await context.SaveChangesAsync();
+
+            var _amountService = new AmountService(new UnitOfWork(context)); // Assuming UnitOfWork takes ApplicationDbContext
+
+            // Act
+            var result = await _amountService.List(1, 2, new amountSearch());
+
+            // Assert
+            Assert.Equal(2, result.Results.Count);  // Ensure the correct page size
+            Assert.Equal(4, result.RowCount);  // Total items count
+            Assert.Equal(1, result.CurrentPage);  // Ensure the current page is correct
+            Assert.Equal(2, result.PageCount);  // Ensure the page count is correct
+        }
+
     }
 }

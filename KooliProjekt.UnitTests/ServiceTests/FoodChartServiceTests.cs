@@ -41,7 +41,7 @@ namespace KooliProjekt.UnitTests.ServiceTests
             Assert.NotNull(result);  // Ensure result is not null
             Assert.Equal(1, result.Id);  // Ensure the correct data is returned
         }
-        
+
         [Fact]
         public async Task List_should_return_paged_food_charts()
         {
@@ -60,6 +60,38 @@ namespace KooliProjekt.UnitTests.ServiceTests
 
             // Assert
             Assert.Equal(pagedResult, result);  // Ensure the result matches the expected paged result
+        }
+
+        [Fact]
+        public async Task Save_should_call_repository_save()
+        {
+            // Arrange
+            var foodChart = new FoodChart { Id = 1, InvoiceNo = "INV001", user = "TestUser" };
+
+            // Mock the repository Save method
+            _repositoryMock.Setup(repo => repo.Save(It.IsAny<FoodChart>())).Returns(Task.CompletedTask);
+
+            // Act
+            await _foodChartService.Save(foodChart);
+
+            // Assert
+            _repositoryMock.Verify(repo => repo.Save(foodChart), Times.Once);  // Ensure Save was called once
+        }
+
+        [Fact]
+        public async Task Delete_should_call_repository_delete()
+        {
+            // Arrange
+            var foodChartId = 1;
+
+            // Mock the repository Delete method
+            _repositoryMock.Setup(repo => repo.Delete(It.IsAny<int>())).Returns(Task.CompletedTask);
+
+            // Act
+            await _foodChartService.Delete(foodChartId);
+
+            // Assert
+            _repositoryMock.Verify(repo => repo.Delete(foodChartId), Times.Once);  // Ensure Delete was called once
         }
     }
 }

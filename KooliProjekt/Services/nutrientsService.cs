@@ -30,6 +30,9 @@ public class NutrientsService : INutrientsService
 
     public async Task Delete(int id)
     {
-        await _unitOfWork.Nutrients.Delete(id);  // Use UnitOfWork to access Nutrients repository
+        var nutrient = await _unitOfWork.Nutrients.Get(id);  // Fetch nutrient by ID
+        if (nutrient == null) return;  // If nutrient doesn't exist, do nothing
+        await _unitOfWork.Nutrients.Delete(id);  // Proceed with delete if nutrient exists
     }
+
 }

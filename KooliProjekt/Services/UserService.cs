@@ -31,6 +31,11 @@ public class UserService : IUserService
 
     public async Task Delete(int id)
     {
-        await _unitOfWork.Users.Delete(id);  // Use UnitOfWork to access Users repository
+        var user = await _unitOfWork.Users.Get(id);
+        if (user != null)
+        {
+            await _unitOfWork.Users.Delete(id);
+        }
     }
 }
+

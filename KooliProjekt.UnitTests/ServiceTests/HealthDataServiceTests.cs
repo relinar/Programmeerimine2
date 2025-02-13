@@ -44,6 +44,31 @@ namespace KooliProjekt.UnitTests.ServiceTests
             _repositoryMock.Verify(repo => repo.AddAsync(healthData), Times.Once);  // Ensure AddAsync was called
             _uowMock.Verify(uow => uow.CommitAsync(), Times.Once);  // Ensure CommitAsync was called once after AddAsync
         }
+        [Fact]
+        public async Task UpdateAsync_should_update_health_data_and_commit()
+        {
+            // Arrange
+            var healthData = new HealthData { Id = 1, User = "Test User", BloodSugar = 130 };
+
+            // Mock the repository methods
+            _repositoryMock.Setup(repo => repo.Update(It.IsAny<HealthData>())).Verifiable();  // Ensure Update is called
+
+            // Mock CommitAsync with a callback to verify it gets called
+            bool commitCalled = false;
+            _uowMock.Setup(uow => uow.CommitAsync()).Callback(() => commitCalled = true).Returns(Task.CompletedTask);  // Verify CommitAsync is called
+
+            // Act
+            await _healthDataService.UpdateAsync(healthData);  // Call UpdateAsync
+            await _healthDataService.SaveAsync();  // Call SaveAsync to trigger CommitAsync
+
+            // Debug: Log to confirm CommitAsync is reached
+            Console.WriteLine("After calling UpdateAsync...");
+
+            // Assert
+            _repositoryMock.Verify(repo => repo.Update(healthData), Times.Once);  // Ensure Update was called once
+            Assert.True(commitCalled, "CommitAsync was not called");  // Ensure CommitAsync was actually called
+        }
+
 
         [Fact]
         public async Task Delete_should_remove_health_data()

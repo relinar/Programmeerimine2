@@ -25,7 +25,7 @@ namespace KooliProjekt.UnitTests.ServiceTests
             // Setup the mock to return the repository mock when the NutrientsRepository is accessed
             _uowMock.SetupGet(uow => uow.Nutrients).Returns(_repositoryMock.Object);
         }
-       
+
         [Fact]
         public async Task Get_should_return_nutrient_for_valid_id()
         {
@@ -60,5 +60,51 @@ namespace KooliProjekt.UnitTests.ServiceTests
             // Assert
             Assert.Equal(pagedResult, result);  // Ensure the result matches the expected paged result
         }
+
+        [Fact]
+        public async Task Save_should_save_nutrient()
+        {
+            // Arrange
+            var nutrient = new Nutrients { Id = 1, Name = "Vitamin C", Carbohydrates = 10, Fats = 0, Sugars = 2 };
+
+            // Setup the mock to ensure that Save() is called on the repository
+            _repositoryMock.Setup(repo => repo.Save(It.IsAny<Nutrients>())).Returns(Task.CompletedTask);
+
+            // Act
+            await _nutrientsService.Save(nutrient);
+
+            // Assert
+            _repositoryMock.Verify(repo => repo.Save(It.Is<Nutrients>(n => n == nutrient)), Times.Once);  // Ensure Save() was called exactly once with the right argument
+        }
+
+        [Fact]
+        public async Task Delete_should_delete_nutrient_for_valid_id()
+        {
+            // Arrange
+            var nutrient = new Nutrients { Id = 1, Name = "Vitamin C", Carbohydrates = 10, Fats = 0, Sugars = 2 };
+
+            // Setup the mock to return the nutrient for the delete operation
+            _repositoryMock.Setup(repo => repo.Get(It.IsAny<int>())).ReturnsAsync(nutrient);
+            _repositoryMock.Setup(repo => repo.Delete(It.IsAny<int>())).Returns(Task.CompletedTask);
+
+            // Act
+            await _nutrientsService.Delete(1);
+
+            // Assert
+            _repositoryMock.Verify(repo => repo.Delete(It.Is<int>(id => id == 1)), Times.Once);  // Ensure Delete() was called exactly once with the correct id
+        }
+        [Fact]
+        public async Task Delete_should_do_nothing_for_invalid_id()
+        {
+            // Arrange
+            _repositoryMock.Setup(repo => repo.Get(It.IsAny<int>())).ReturnsAsync((Nutrients)null);  // Return null for non-existent nutrient
+
+            // Act
+            await _nutrientsService.Delete(999);  // Pass an invalid id
+
+            // Assert
+            _repositoryMock.Verify(repo => repo.Delete(It.IsAny<int>()), Times.Never);  // Ensure Delete() was not called
+        }
+
     }
 }
