@@ -16,7 +16,6 @@ namespace KooliProjekt.Controllers
             _nutrientsService = nutrientsService;
         }
 
-        // Index action that returns the view with data
         public async Task<IActionResult> Index(int page = 1, NutrientsSearch search = null)
         {
             // Query the service to get the paged nutrient data
