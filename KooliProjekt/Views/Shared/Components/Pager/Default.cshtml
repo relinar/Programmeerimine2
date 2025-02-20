@@ -12,16 +12,17 @@
         urlTemplate += "&" + key + "=" + request.Query[key];
     }
 
-    var startIndex = Math.Max(Model.CurrentPage - 5, 1);
-    var finishIndex = Math.Min(Model.CurrentPage + 5, Model.PageCount);
+    var startIndex = Model != null ? Math.Max(Model.CurrentPage - 5, 1) : 1;
+    var finishIndex = Model != null ? Math.Min(Model.CurrentPage + 5, Model.PageCount) : 1;
 }
+
 
 <div class="row">
     @* <div class="col-md-4 col-sm-4 items-info">
     Items @Model.FirstRowOnPage to @Model.LastRowOnPage of @Model.RowCount total
     </div> *@
     <div class="col-md-8 col-sm-8">
-        @if (Model.PageCount > 1)
+        @if (Model?.PageCount > 1)
         {
             <ul class="pagination pull-right">
                 <li><a href="@urlTemplate.Replace("{0}", "1")">&laquo;</a></li>

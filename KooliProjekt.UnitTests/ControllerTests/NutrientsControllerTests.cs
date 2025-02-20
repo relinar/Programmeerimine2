@@ -22,7 +22,6 @@ namespace KooliProjekt.UnitTests.ControllerTests
             _controller = new NutrientsController(_nutrientsServiceMock.Object);
         }
 
-        // Test the Index action
         [Fact]
         public async Task Index_Should_Return_Correct_View_With_Data()
         {
@@ -35,15 +34,15 @@ namespace KooliProjekt.UnitTests.ControllerTests
                 Sugars = "5"
             };
 
-            // Create PagedResult without 'pageCount' (calculated dynamically)
+            // Create PagedResult with mock nutrients data
             var pagedResult = new PagedResult<Nutrients>(
                 currentPage: 1,
                 pageSize: 10,
                 rowCount: 2,
                 results: new List<Nutrients>
                 {
-                    new Nutrients { Id = 1, Name = "Protein" },
-                    new Nutrients { Id = 2, Name = "Carbohydrates" }
+            new Nutrients { Id = 1, Name = "Protein" },
+            new Nutrients { Id = 2, Name = "Carbohydrates" }
                 }
             );
 
@@ -54,13 +53,25 @@ namespace KooliProjekt.UnitTests.ControllerTests
             // Act: Call the Index action
             var result = await _controller.Index(1, search) as ViewResult;
 
-            // Assert: Ensure that the view returns the correct model and data
-            var model = result?.Model as NutrientsIndexModel;
-            Assert.NotNull(model);
-            Assert.Equal(2, model?.Data.RowCount);  // Ensure RowCount is correct
-            Assert.Equal("Test Nutrient", model?.Search.Name);  // Ensure the search field is correct
-            Assert.Equal("Protein", model?.Data.Results[0].Name);  // First nutrient name
+            // Assert: Ensure that the result is not null
+            Assert.NotNull(result);
+
+            // Ensure that the model is of the correct type (PagedResult<Nutrients>)
+            var model = result?.Model as PagedResult<Nutrients>;
+            Assert.NotNull(model);  // Ensure the model is not null
+
+            // Ensure the model's Data and Search properties are set correctly
+            Assert.Equal(2, model?.RowCount);  // Ensure RowCount is correct
+            Assert.Equal("Test Nutrient", search.Name);  // Ensure the search field is correct
+
+            // Ensure that the model's Results are populated correctly
+            Assert.Equal("Protein", model?.Results[0].Name);  // First nutrient name
+            Assert.Equal("Carbohydrates", model?.Results[1].Name);  // Second nutrient name
+
+            // Ensure the mock service method List was called once
+            _nutrientsServiceMock.Verify(service => service.List(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<NutrientsSearch>()), Times.Once);
         }
+
 
         // Test the Create action (GET)
         [Fact]

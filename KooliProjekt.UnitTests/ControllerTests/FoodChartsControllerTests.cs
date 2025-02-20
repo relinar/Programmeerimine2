@@ -20,33 +20,52 @@ namespace KooliProjekt.UnitTests.ControllerTests
             _foodChartServiceMock = new Mock<IFoodChartService>();
             _controller = new FoodChartsController(_foodChartServiceMock.Object);
         }
-
-        // Testing the Index method
         [Fact]
         public async Task Index_Should_Return_View_With_FoodCharts()
         {
+            // Arrange: Prepare mock data for food charts
             var foodCharts = new List<FoodChart>
-            {
-                new FoodChart { Id = 1, InvoiceNo = "INV001", InvoiceDate = DateTime.Now, user = "User1", date = "2025-01-28", meal = "Meal1", nutrients = DateTime.Now, amount = 200.5f },
-                new FoodChart { Id = 2, InvoiceNo = "INV002", InvoiceDate = DateTime.Now, user = "User2", date = "2025-01-28", meal = "Meal2", nutrients = DateTime.Now, amount = 150.5f }
-            };
+    {
+        new FoodChart { Id = 1, InvoiceNo = "INV001", InvoiceDate = DateTime.Now, user = "User1", date = "2025-01-28", meal = "Meal1", nutrients = DateTime.Now, amount = 200.5f },
+        new FoodChart { Id = 2, InvoiceNo = "INV002", InvoiceDate = DateTime.Now, user = "User2", date = "2025-01-28", meal = "Meal2", nutrients = DateTime.Now, amount = 150.5f }
+    };
+
+            // Mock the service to return paged results
+            var pagedResult = new PagedResult<FoodChart>(
+                currentPage: 1,
+                pageSize: 5,
+                rowCount: foodCharts.Count,
+                results: foodCharts
+            );
 
             _foodChartServiceMock.Setup(service => service.List(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<FoodChartSearch>()))
-                .ReturnsAsync(new PagedResult<FoodChart>(
-                    currentPage: 1,
-                    pageSize: 5,
-                    rowCount: foodCharts.Count,
-                    results: foodCharts
-                ));
+                .ReturnsAsync(pagedResult);
 
+            // Act: Call the Index action
             var result = await _controller.Index(1) as ViewResult;
 
+            // Assert: Check if result is not null
             Assert.NotNull(result);
-            var model = result.Model as FoodChartIndexModel;
-            Assert.NotNull(model);
-            Assert.Equal(foodCharts, model.Data.Results);
+
+            // Assert that the ViewName is "Index" (explicitly set by the controller)
             Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Index");
+
+            // Assert that the model is of the correct type (PagedResult<FoodChart>)
+            var model = result.Model as PagedResult<FoodChart>;
+            Assert.NotNull(model);  // Ensure the model is not null
+
+            // Check if the model's Results property is correctly set
+            Assert.NotNull(model.Results);  // Ensure Results property exists
+
+            // Assert the number of results matches
+            Assert.Equal(foodCharts.Count, model.Results.Count);  // Check the count
+            Assert.Equal(foodCharts[0].Id, model.Results[0].Id);  // Check first item
+            Assert.Equal(foodCharts[1].Id, model.Results[1].Id);  // Check second item
+
+            // Ensure that the mock service method List was called once
+            _foodChartServiceMock.Verify(service => service.List(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<FoodChartSearch>()), Times.Once);
         }
+
 
         // Testing the Details method
         [Fact]

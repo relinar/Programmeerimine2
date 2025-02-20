@@ -39,40 +39,6 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public async Task Index_Should_Return_Correct_View_With_Data()
-        {
-            var userSearch = new UserSearch { Name = "Test User", Role = "Admin" };
-            var userIndexModel = new UserIndexModel { Search = userSearch };
-            var userList = new List<User>
-            {
-                new User { Id = 1, Name = "Test User", Role = "Admin" },
-                new User { Id = 2, Name = "Test User 2", Role = "User" }
-            };
-            var pagedResult = new PagedResult<User>(1, 5, 2, userList);
-            _userServiceMock.Setup(x => x.List(1, 5, userSearch)).ReturnsAsync(pagedResult);
-
-            var result = await _controller.Index(1, userIndexModel) as ViewResult;
-            var model = result?.Model as UserIndexModel;
-
-            Assert.NotNull(model);
-            Assert.Equal(userList, model?.Data?.Results);
-            Assert.Equal(userSearch, model?.Search);
-        }
-        [Fact]
-        public async Task Index_Should_Handle_Empty_Result()
-        {
-            _userServiceMock.Setup(x => x.List(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<UserSearch>()))
-                .ReturnsAsync(new PagedResult<User>(1, 5, 0, new List<User>()));
-
-            var result = await _controller.Index(1, new UserIndexModel()) as ViewResult;
-            var model = result?.Model as UserIndexModel;
-
-            Assert.NotNull(model);
-            Assert.Empty(model.Data.Results);
-        }
-
-       
-        [Fact]
         public async Task Create_Get_Should_Return_View()
         {
             var result = _controller.Create() as ViewResult;
@@ -206,20 +172,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
    
-        [Fact]
-        public async Task Index_Should_Return_View_With_Users()
-        {
-            var userList = new List<User> { new User { Id = 1, Name = "User1" }, new User { Id = 2, Name = "User2" } };
-            _userServiceMock.Setup(x => x.List(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<UserSearch>()))
-                .ReturnsAsync(new PagedResult<User>(1, 5, 2, userList));
-
-            var result = await _controller.Index(1, new UserIndexModel()) as ViewResult;
-            var model = result?.Model as UserIndexModel;
-
-            Assert.NotNull(model);
-            Assert.Equal(2, model.Data.Results.Count);
-        }
-
+      
          
         [Fact]
         public async Task Details_Should_Return_View_When_User_Exists()

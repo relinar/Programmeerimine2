@@ -22,11 +22,12 @@ namespace KooliProjekt.Controllers
             model = model ?? new FoodChartIndexModel();
 
             // Fetch paginated results
-            model.Data = await _foodChartService.List(page, 5, model.Search);
+            var pagedResult = await _foodChartService.List(page, 5, model.Search);
 
-            // Return the view with the populated model
-            return View(model);
+            // Return the paged result directly, since the view expects this type
+            return View(pagedResult);
         }
+
 
         // GET: FoodCharts/Details/5
         public async Task<IActionResult> Details(int? id)

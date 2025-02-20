@@ -21,16 +21,10 @@ namespace KooliProjekt.Controllers
             // Query the service to get the paged nutrient data
             var pagedResult = await _nutrientsService.List(page, 10, search);
 
-            // Create the model for the view
-            var model = new NutrientsIndexModel
-            {
-                Data = pagedResult,
-                Search = search
-            };
-
-            // Return the view with the model
-            return View(model);
+            // Return the view with the paged result directly
+            return View(pagedResult);
         }
+
 
         // Create (GET) - Returns the view to create a new nutrient
         public IActionResult Create()

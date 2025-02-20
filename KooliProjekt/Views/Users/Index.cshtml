@@ -28,7 +28,8 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Results) {
+        @foreach (var item in Model.Results)
+        {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)

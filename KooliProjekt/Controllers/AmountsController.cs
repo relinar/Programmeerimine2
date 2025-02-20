@@ -16,15 +16,6 @@ namespace KooliProjekt.Controllers
         {
             _amountService = amountService;
         }
-
-        // Index Action: Display list of amounts
-        public async Task<IActionResult> Index()
-        {
-            var amounts = await _amountService.GetAmountsAsync(); // Get list of amounts from service
-            return View(amounts);
-        }
-
-        // Details Action: Display a single amount by ID
         public async Task<IActionResult> Details(int id)
         {
             var amount = await _amountService.Get(id);
@@ -32,7 +23,18 @@ namespace KooliProjekt.Controllers
             {
                 return NotFound();
             }
-            return View(amount);
+            return View(amount);  // Return the amount details to the view
+        }
+        public async Task<IActionResult> Index(int page = 1)
+        {
+            int pageSize = 10; // or any size you want
+            var search = new amountSearch(); // Set any necessary search parameters
+
+            // Get the paged results from the AmountService
+            var pagedResult = await _amountService.List(page, pageSize, search);
+
+            // Pass the PagedResult model to the view
+            return View(pagedResult);
         }
 
         // Create Action: Add a new amount

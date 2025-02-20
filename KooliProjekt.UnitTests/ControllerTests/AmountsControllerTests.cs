@@ -21,30 +21,84 @@ namespace KooliProjekt.UnitTests.ControllerTests
             _amountServiceMock = new Mock<IAmountService>();
             _controller = new AmountsController(_amountServiceMock.Object);
         }
+        [Fact]
+        public async Task Details_ReturnsNotFound_WhenAmountIsNull()
+        {
+            // Arrange
+            var mockAmountService = new Mock<IAmountService>();
+            mockAmountService.Setup(service => service.Get(It.IsAny<int>())).ReturnsAsync((Amount)null);
 
+            var controller = new AmountsController(mockAmountService.Object);
+
+            // Act
+            var result = await controller.Details(1);  // Passing an ID for the test
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);  // Expecting NotFound if the amount doesn't exist
+        }
+
+        [Fact]
+        public async Task Details_ReturnsViewResult_WhenAmountIsFound()
+        {
+            // Arrange
+            var mockAmountService = new Mock<IAmountService>();
+            var amount = new Amount { AmountID = 1, NutrientsID = 101, AmountDate = DateTime.Now };  // Sample Amount object
+            mockAmountService.Setup(service => service.Get(It.IsAny<int>())).ReturnsAsync(amount);
+
+            var controller = new AmountsController(mockAmountService.Object);
+
+            // Act
+            var result = await controller.Details(1);  // Passing a valid ID for the test
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<Amount>(viewResult.Model);  // Ensure the model is of type Amount
+            Assert.Equal(1, model.AmountID);  // Verify that the returned model has the correct AmountID
+        }
         [Fact]
         public async Task Index_Should_Return_View_With_Amounts()
         {
-            // Arrange: Create some mock data
+            // Arrange: Create mock data
             var amounts = new List<Amount>
-            {
-                new Amount { AmountID = 1, NutrientsID = 1, AmountDate = DateTime.Now },  // Correct property names here
-                new Amount { AmountID = 2, NutrientsID = 2, AmountDate = DateTime.Now }   // Same here
-            };
+    {
+        new Amount { AmountID = 1, NutrientsID = 1, AmountDate = DateTime.Now },
+        new Amount { AmountID = 2, NutrientsID = 2, AmountDate = DateTime.Now }
+    };
 
-            // Mock the service to return the list of amounts
-            _amountServiceMock.Setup(service => service.GetAmountsAsync()).ReturnsAsync(amounts);
+            // Mock the service to return a PagedResult of amounts
+            var pagedResult = new PagedResult<Amount>(
+                currentPage: 1,
+                pageSize: 10,
+                rowCount: amounts.Count,
+                results: amounts
+            );
+
+            _amountServiceMock.Setup(service => service.List(1, 10, It.IsAny<amountSearch>()))
+                .ReturnsAsync(pagedResult);
 
             // Act: Call the Index action
-            var result = await _controller.Index() as ViewResult;
+            var result = await _controller.Index(1) as ViewResult;
 
-            // Assert: Check if the result is of type ViewResult and contains the expected model
+            // Assert: Ensure the result is not null
             Assert.NotNull(result);
-            Assert.Equal(amounts, result.Model);
 
-            // Ensure that the correct view is returned (null means default view, which is "Index")
+            // Check if the model is not null
+            Assert.NotNull(result.Model);
+
+            // Check if the model is of the correct type (PagedResult<Amount>)
+            Assert.IsType<PagedResult<Amount>>(result.Model);
+
+            // Check the model contents if valid
+            var model = result.Model as PagedResult<Amount>;
+            Assert.Equal(amounts.Count, model.Results.Count);  // Assert the list count
+            Assert.Equal(amounts[0].AmountID, model.Results[0].AmountID);  // Assert first item match
+            Assert.Equal(amounts[1].AmountID, model.Results[1].AmountID);  // Assert second item match
+
+            // Ensure the correct view is returned
             Assert.True(string.IsNullOrEmpty(result.ViewName) || result.ViewName == "Index");
         }
+
+
 
         [Fact]
         public async Task Edit_Should_Return_View_When_ModelState_Is_Invalid()

@@ -21,8 +21,10 @@ namespace KooliProjekt.Controllers
             try
             {
                 model ??= new UserIndexModel();
-                model.Data = await _userService.List(page, 5, model.Search);
-                return View(model);
+                var pagedResult = await _userService.List(page, 5, model.Search);
+
+                // Pass the paged result directly to the view (without wrapping it in UserIndexModel)
+                return View(pagedResult);
             }
             catch (Exception)
             {
@@ -30,6 +32,8 @@ namespace KooliProjekt.Controllers
                 return View(new UserIndexModel { Data = null, Search = null });
             }
         }
+
+
 
         public async Task<IActionResult> Details(int? id)
         {

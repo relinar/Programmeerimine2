@@ -99,8 +99,8 @@ namespace KooliProjekt.Services
             return new PagedResult<Amount>(page, pageSize, rowCount, results);
         }
 
-
     }
 }
-    
+
+
 
