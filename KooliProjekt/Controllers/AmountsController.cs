@@ -23,19 +23,19 @@ namespace KooliProjekt.Controllers
             {
                 return NotFound();
             }
-            return View(amount);  // Return the amount details to the view
+            return View(amount);  
         }
+
+
         public async Task<IActionResult> Index(int page = 1)
         {
-            int pageSize = 10; // or any size you want
-            var search = new amountSearch(); // Set any necessary search parameters
-
-            // Get the paged results from the AmountService
-            var pagedResult = await _amountService.List(page, pageSize, search);
-
-            // Pass the PagedResult model to the view
-            return View(pagedResult);
+           
+            var Data = await _amountService.List(page, 5);
+           
+            return View(Data);
         }
+
+
 
         // Create Action: Add a new amount
         public IActionResult Create()

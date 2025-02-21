@@ -1,6 +1,6 @@
-﻿using System;
-using KooliProjekt.Data;
+﻿using KooliProjekt.Data;
 using Microsoft.AspNetCore.Mvc.Testing;
+using System;
 
 namespace KooliProjekt.IntegrationTests.Helpers
 {
@@ -16,9 +16,9 @@ namespace KooliProjekt.IntegrationTests.Helpers
         public void Dispose()
         {
             var dbContext = (ApplicationDbContext)Factory.Services.GetService(typeof(ApplicationDbContext));
-            dbContext.Database.EnsureDeleted();
+            dbContext?.Database.EnsureDeleted();
         }
 
-        // Add your other helper methods here
+        // Add your other helper methods here if necessary
     }
 }

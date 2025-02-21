@@ -1,6 +1,7 @@
 ﻿using KooliProjekt.Data;
 using KooliProjekt.Models;
 using KooliProjekt.Search;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,7 +38,7 @@ namespace KooliProjekt.Services
             _context.Add(item);  // Adds a new Amount to the DbSet
             await _context.SaveChangesAsync();  // Save changes to the database
         }
-
+      
         // Update an existing Amount
         public async Task UpdateAmountAsync(Amount item)
         {
@@ -98,6 +99,20 @@ namespace KooliProjekt.Services
             // Create and return the PagedResult
             return new PagedResult<Amount>(page, pageSize, rowCount, results);
         }
+
+        public async Task<PagedResult<Amount>> List(int page, int pageSize)
+        {
+            var query = _context.amount.AsQueryable(); // Ensure _context is correctly injected
+            var totalItems = await query.CountAsync();  // Count total items in DB
+
+            var items = await query
+                .Skip((page - 1) * pageSize)  // Skip previous pages
+                .Take(pageSize)  // Take only pageSize results
+                .ToListAsync();
+
+            return new PagedResult<Amount>(page, pageSize, totalItems, items);
+        }
+
 
     }
 }

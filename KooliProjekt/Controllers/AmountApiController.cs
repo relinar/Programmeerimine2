@@ -1,13 +1,12 @@
-﻿using KooliProjekt.Data;
-using KooliProjekt.Models;
+﻿using System.Numerics;
+using KooliProjekt.Data;
 using KooliProjekt.Services;
 using Microsoft.AspNetCore.Mvc;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace KooliProjekt.Controllers
 {
-    [Route("api/Amount")]
+    [Route("api/Amounts")]
     [ApiController]
     public class AmountApiController : ControllerBase
     {
@@ -17,12 +16,11 @@ namespace KooliProjekt.Controllers
         {
             _service = service;
         }
+
         [HttpGet]
         public async Task<IEnumerable<Amount>> Get()
         {
-            // Create an empty search object if you don't want any filters applied
-            var search = new amountSearch();
-            var result = await _service.List(1, 10000, search);  // Passing the search parameter
+            var result = await _service.List(1, 10000);
             return result.Results;
         }
 
@@ -38,10 +36,18 @@ namespace KooliProjekt.Controllers
             return list;
         }
 
+        [HttpPost]
+        public async Task<object> Post([FromBody] Amount list)
+        {
+            await _service.Save(list);
+
+            return Ok(list);
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Amount list)
         {
-            if (id != list.AmountID)  // Changing 'Id' to 'AmountID'
+            if (id != list.AmountID)
             {
                 return BadRequest();
             }

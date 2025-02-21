@@ -57,19 +57,17 @@ namespace KooliProjekt
             app.UseAuthorization();
 
             app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                 name: "default",
+                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
 
             if (app.Environment.IsDevelopment())
             {
                 using (var scope = app.Services.CreateScope())
+                using (var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>())
                 {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                    dbContext.Database.EnsureCreated();
-
-                    SeedData.Generate(dbContext);
+                    context.Database.EnsureCreated();
+                    SeedData.Generate(context);
                 }
             }
 

@@ -14,8 +14,6 @@ namespace KooliProjekt.Services
         Task UpdateAmountAsync(Amount item);
         Task Delete(int id);
         Task Save(Amount item);
-
-        // The List method for paged results with search functionality
-        Task<PagedResult<Amount>> List(int page, int pageSize, amountSearch search);
+        Task<PagedResult<Amount>> List(int page, int pageSize);
     }
 }
