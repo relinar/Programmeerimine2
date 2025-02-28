@@ -20,7 +20,7 @@ namespace KooliProjekt.Controllers
         [HttpGet]
         public async Task<IEnumerable<Amount>> Get()
         {
-            var result = await _service.List(1, 10000);
+            var result = await _service.List(1, 10000, null);
             return result.Results;
         }
 

@@ -75,43 +75,40 @@ namespace KooliProjekt.Services
             var query = _context.amount.AsQueryable();
 
             // Apply filters based on search parameters
-            if (search.AmountID.HasValue)
-            {
-                query = query.Where(a => a.AmountID == search.AmountID);
+
+            if(search != null)
+            { 
+                if (search.AmountID.HasValue)
+                {
+                    query = query.Where(a => a.AmountID == search.AmountID);
+                }
+
+                if (search.NutrientsID.HasValue)
+                {
+                    query = query.Where(a => a.NutrientsID == search.NutrientsID);
+                }
+
+                if (search.AmountDate.HasValue)
+                {
+                    query = query.Where(a => a.AmountDate.Date == search.AmountDate.Value.Date);  // Date comparison to ignore time
+                }
             }
 
-            if (search.NutrientsID.HasValue)
-            {
-                query = query.Where(a => a.NutrientsID == search.NutrientsID);
-            }
-
-            if (search.AmountDate.HasValue)
-            {
-                query = query.Where(a => a.AmountDate.Date == search.AmountDate.Value.Date);  // Date comparison to ignore time
-            }
-
-            // Get the total count of results
-            var rowCount = await query.CountAsync();
-
-            // Get the paged results
-            var results = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-
-            // Create and return the PagedResult
-            return new PagedResult<Amount>(page, pageSize, rowCount, results);
+            return await query.GetPagedAsync(page, pageSize);
         }
 
-        public async Task<PagedResult<Amount>> List(int page, int pageSize)
-        {
-            var query = _context.amount.AsQueryable(); // Ensure _context is correctly injected
-            var totalItems = await query.CountAsync();  // Count total items in DB
+        //public async Task<PagedResult<Amount>> List(int page, int pageSize)
+        //{
+        //    var query = _context.amount.AsQueryable(); // Ensure _context is correctly injected
+        //    var totalItems = await query.CountAsync();  // Count total items in DB
 
-            var items = await query
-                .Skip((page - 1) * pageSize)  // Skip previous pages
-                .Take(pageSize)  // Take only pageSize results
-                .ToListAsync();
+        //    var items = await query
+        //        .Skip((page - 1) * pageSize)  // Skip previous pages
+        //        .Take(pageSize)  // Take only pageSize results
+        //        .ToListAsync();
 
-            return new PagedResult<Amount>(page, pageSize, totalItems, items);
-        }
+        //    return new PagedResult<Amount>(page, pageSize, totalItems, items);
+        //}
 
 
     }

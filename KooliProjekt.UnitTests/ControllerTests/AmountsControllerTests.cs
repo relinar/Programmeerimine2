@@ -73,7 +73,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
                 results: amounts
             );
 
-            _amountServiceMock.Setup(service => service.List(1, 10, It.IsAny<amountSearch>()))
+            _amountServiceMock.Setup(service => service.List(1, It.IsAny<int>(), It.IsAny<amountSearch>()))
                 .ReturnsAsync(pagedResult);
 
             // Act: Call the Index action

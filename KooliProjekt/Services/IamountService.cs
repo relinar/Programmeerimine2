@@ -14,6 +14,7 @@ namespace KooliProjekt.Services
         Task UpdateAmountAsync(Amount item);
         Task Delete(int id);
         Task Save(Amount item);
-        Task<PagedResult<Amount>> List(int page, int pageSize);
+        //Task<PagedResult<Amount>> List(int page, int pageSize);
+        Task<PagedResult<Amount>> List(int page, int pageSize, amountSearch search);
     }
 }

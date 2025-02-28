@@ -21,5 +21,6 @@ namespace KooliProjekt.Data
 
         public DateTime DailySummary { get; set; }
         public DateTime Meal { get; set; }
+        public string Title { get; set; }
     }
 }

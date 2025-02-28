@@ -22,5 +22,6 @@ namespace KooliProjekt.Data
         public float Fats { get; set; }
 
         public DateTime FoodChart { get; set; }
+        public string Title { get; set; }
     }
 }

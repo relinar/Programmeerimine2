@@ -30,7 +30,7 @@ namespace KooliProjekt.Controllers
         public async Task<IActionResult> Index(int page = 1)
         {
            
-            var Data = await _amountService.List(page, 5);
+            var Data = await _amountService.List(page, 5, null);
            
             return View(Data);
         }

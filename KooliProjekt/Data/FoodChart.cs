@@ -18,6 +18,6 @@ namespace KooliProjekt.Data
         public string meal { get; set; }
         public DateTime nutrients { get; set; }
         public float amount { get; set; }
-
+        public string Title { get; set; }
     }
 }

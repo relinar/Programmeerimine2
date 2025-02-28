@@ -17,5 +17,6 @@
         // Täiendavad andmed
         public int Height { get; set; }         // Kõrgus
         public int Age { get; set; }            // Vanus
+        public string Title { get; set; }
     }
 }
