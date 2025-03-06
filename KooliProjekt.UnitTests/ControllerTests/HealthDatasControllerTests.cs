@@ -30,15 +30,16 @@ namespace KooliProjekt.UnitTests.ControllerTests
                 new HealthData { Id = 1, User = "User 1", Date = "2025-01-01", BloodSugar = 5.6f, Weight = 70.0f },
                 new HealthData { Id = 2, User = "User 2", Date = "2025-02-01", BloodSugar = 5.7f, Weight = 71.0f }
             };
+            var pagedResult = new PagedResult<HealthData> { Results = healthDataList };
 
-            _healthDataServiceMock.Setup(service => service.Get(1)).ReturnsAsync(healthDataList[0]);
-            _healthDataServiceMock.Setup(service => service.Get(2)).ReturnsAsync(healthDataList[1]);
+            _healthDataServiceMock.Setup(service => service.List(It.IsAny<int>(), It.IsAny<int>()))
+                                  .ReturnsAsync(pagedResult);
 
             var result = await _controller.Index() as ViewResult;
-            var model = result?.Model as List<HealthData>;
+            var model = result?.Model as PagedResult<HealthData>;
 
             Assert.NotNull(result);
-            Assert.Equal(healthDataList, model);
+            Assert.Equal(pagedResult, model);
         }
 
         // Testing the Create method (GET)

@@ -60,18 +60,12 @@ namespace KooliProjekt.UnitTests.ControllerTests
         {
             // Arrange: Create mock data
             var amounts = new List<Amount>
-    {
-        new Amount { AmountID = 1, NutrientsID = 1, AmountDate = DateTime.Now },
-        new Amount { AmountID = 2, NutrientsID = 2, AmountDate = DateTime.Now }
-    };
+            {
+                new Amount { AmountID = 1, NutrientsID = 1, AmountDate = DateTime.Now },
+                new Amount { AmountID = 2, NutrientsID = 2, AmountDate = DateTime.Now }
+            };
 
-            // Mock the service to return a PagedResult of amounts
-            var pagedResult = new PagedResult<Amount>(
-                currentPage: 1,
-                pageSize: 10,
-                rowCount: amounts.Count,
-                results: amounts
-            );
+            var pagedResult = new PagedResult<Amount> { Results = amounts };
 
             _amountServiceMock.Setup(service => service.List(1, It.IsAny<int>(), It.IsAny<amountSearch>()))
                 .ReturnsAsync(pagedResult);

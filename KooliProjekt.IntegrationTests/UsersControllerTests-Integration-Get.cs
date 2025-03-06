@@ -25,7 +25,7 @@ namespace KooliProjekt.IntegrationTests
             // Arrange
 
             // Act
-            using var response = await _client.GetAsync("/User");
+            using var response = await _client.GetAsync("/Users");
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -37,7 +37,7 @@ namespace KooliProjekt.IntegrationTests
             // Arrange
 
             // Act
-            using var response = await _client.GetAsync("/User/Details/100");
+            using var response = await _client.GetAsync("/Users/Details/100");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -49,7 +49,7 @@ namespace KooliProjekt.IntegrationTests
             // Arrange
 
             // Act
-            using var response = await _client.GetAsync("/User/Details/");
+            using var response = await _client.GetAsync("/Users/Details/");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -64,7 +64,7 @@ namespace KooliProjekt.IntegrationTests
             _context.SaveChanges();
 
             // Act
-            using var response = await _client.GetAsync("/User/Details/" + list.Id);
+            using var response = await _client.GetAsync("/Users/Details/" + list.Id);
 
             // Assert
             response.EnsureSuccessStatusCode();

@@ -17,15 +17,10 @@ namespace KooliProjekt.Controllers
         }
 
         // Index Action: Lists all health data records
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            // Retrieve all health data records (mocked here for simplicity)
-            var healthDataList = new List<HealthData>
-            {
-                await _healthDataService.Get(1),
-                await _healthDataService.Get(2)
-            };
-            return View(healthDataList);
+            var model = await _healthDataService.List(page, 5);
+            return View(model);
         }
 
         // Create Action: Displays the form for creating a new health data record (GET)

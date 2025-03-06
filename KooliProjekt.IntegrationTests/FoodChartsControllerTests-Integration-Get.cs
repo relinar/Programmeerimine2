@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using KooliProjekt.Data;
@@ -25,7 +26,7 @@ namespace KooliProjekt.IntegrationTests
             // Arrange
 
             // Act
-            using var response = await _client.GetAsync("/FoodChart");
+            using var response = await _client.GetAsync("/FoodCharts");
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -37,7 +38,7 @@ namespace KooliProjekt.IntegrationTests
             // Arrange
 
             // Act
-            using var response = await _client.GetAsync("/FoodChart/Details/100");
+            using var response = await _client.GetAsync("/FoodCharts/Details/100");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -49,7 +50,7 @@ namespace KooliProjekt.IntegrationTests
             // Arrange
 
             // Act
-            using var response = await _client.GetAsync("/FoodChart/Details/");
+            using var response = await _client.GetAsync("/FoodCharts/Details/");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -59,12 +60,12 @@ namespace KooliProjekt.IntegrationTests
         public async Task Details_should_return_ok_when_list_was_found()
         {
             // Arrange
-            var list = new FoodChart { Title = "List 1" };
+            var list = new FoodChart { Title = "List 1", InvoiceDate = DateTime.Now, InvoiceNo="123" };
             _context.food_Chart.Add(list);
             _context.SaveChanges();
 
             // Act
-            using var response = await _client.GetAsync("/TodoLists/Details/" + list.Id);
+            using var response = await _client.GetAsync("/FoodCharts/Details/" + list.Id);
 
             // Assert
             response.EnsureSuccessStatusCode();

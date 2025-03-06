@@ -1,4 +1,5 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
@@ -11,6 +12,11 @@ namespace KooliProjekt.Services
         public HealthDataService(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<PagedResult<HealthData>> List(int page, int pageSize)
+        {
+            return await _context.health_data.GetPagedAsync(page, pageSize);
         }
 
         // Get a health data by Id

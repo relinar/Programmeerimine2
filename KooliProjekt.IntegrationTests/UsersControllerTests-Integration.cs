@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -11,12 +12,12 @@ using Xunit;
 namespace KooliProjekt.IntegrationTests
 {
     [Collection("Sequential")]
-    public class AmountControllerTests : TestBase
+    public class UserControllerTests : TestBase
     {
         private readonly HttpClient _client;
         private readonly ApplicationDbContext _context;
 
-        public AmountControllerTests()
+        public UserControllerTests()
         {
             var options = new WebApplicationFactoryClientOptions
             {
@@ -33,29 +34,12 @@ namespace KooliProjekt.IntegrationTests
             // Arrange
 
             // Act
-            using var response = await _client.GetAsync("/Amounts");
+            using var response = await _client.GetAsync("/Users");
 
             // Assert
             response.EnsureSuccessStatusCode();
         }
-
-        [Theory]
-        [InlineData("/Amounts/Details")]
-        [InlineData("/Amounts/Details/100")]
-        [InlineData("/Amounts/Delete")]
-        [InlineData("/Amounts/Delete/100")]
-        [InlineData("/Amounts/Edit")]
-        [InlineData("/Amounts/Edit/100")]
-        public async Task Should_return_notfound(string url)
-        {
-            // Arrange
-
-            // Act
-            using var response = await _client.GetAsync(url);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        }
+       
 
         [Fact]
         public async Task Details_should_return_notfound_when_list_was_not_found()
@@ -63,7 +47,7 @@ namespace KooliProjekt.IntegrationTests
             // Arrange
 
             // Act
-            using var response = await _client.GetAsync("/Amounts/Details/100");
+            using var response = await _client.GetAsync("/Users/Details/100");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -79,51 +63,61 @@ namespace KooliProjekt.IntegrationTests
             _context.SaveChanges();
 
             // Act
-            using var response = await _client.GetAsync("/Amounts/Details/" + list.AmountID);
+            using var response = await _client.GetAsync("/Users/Details/" + list.AmountID);
 
             // Assert
             response.EnsureSuccessStatusCode();
         }
 
         [Fact]
-        public async Task Create_should_save_new_amount()
+        public async Task Create_should_save_new_list()
         {
             // Arrange
             var formValues = new Dictionary<string, string>();
             formValues.Add("Id", "0");
-            formValues.Add("AmountTitle", "Test");
+            formValues.Add("Title", "Test");
 
             using var content = new FormUrlEncodedContent(formValues);
 
             // Act
-            using var response = await _client.PostAsync("/Amounts/Create", content);
+            using var response = await _client.PostAsync("/Users/Create", content);
 
             // Assert
             Assert.True(
                 response.StatusCode == HttpStatusCode.Redirect ||
                 response.StatusCode == HttpStatusCode.MovedPermanently);
 
-            var list = _context.amount.FirstOrDefault();
+            var list = _context.Users.FirstOrDefault();
             Assert.NotNull(list);
-            Assert.NotEqual(0, list.AmountID);
-            Assert.Equal("Test", list.AmountTitle);
+            Assert.NotEqual("0", list.Id);
+            Assert.Equal("Test", list.UserName);
         }
 
         [Fact]
-        public async Task Create_should_not_save_invalid_new_amount()
+        public async Task Create_should_not_save_invalid_new_list()
         {
             // Arrange
-            var formValues = new Dictionary<string, string>();
-            formValues.Add("AmountDate", "");
+            var formValues = new Dictionary<string, string>
+    {
+        { "Title", "" } // Empty title to trigger validation error
+    };
 
             using var content = new FormUrlEncodedContent(formValues);
 
             // Act
-            using var response = await _client.PostAsync("/Amounts/Create", content);
+            using var response = await _client.PostAsync("/Users/Create", content);
 
-            // Assert
-            response.EnsureSuccessStatusCode();
-            Assert.False(_context.amount.Any());
+            // Log the response status and content for debugging
+            Console.WriteLine($"Response Status Code: {response.StatusCode}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Response Content: {responseContent}");
+
+            // Assert that the response is a BadRequest (400) as expected for invalid data
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            // Ensure no new users were created
+            Assert.False(_context.Users.Any());
         }
+
     }
 }

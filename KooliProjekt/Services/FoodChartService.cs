@@ -16,21 +16,13 @@ namespace KooliProjekt.Services
         }
 
         public async Task<PagedResult<FoodChart>> List(int page, int pageSize, FoodChartSearch search)
-        {
-            // Query to fetch data (apply search filtering if needed)
+        {            
             var query = _context.food_Chart.AsQueryable();
 
-            // Get the total count of records
-            var totalCount = await query.CountAsync();
+            // otsingu tingimused
+            // 
 
-            // Calculate the page count (if no records, set it to 0)
-            var pageCount = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize);
-
-            // Get the paginated results
-            var results = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-
-            // Create and return the PagedResult
-            return new PagedResult<FoodChart>(page, pageSize, totalCount, results);
+            return await query.GetPagedAsync(page, pageSize);
         }
 
 

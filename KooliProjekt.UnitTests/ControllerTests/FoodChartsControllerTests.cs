@@ -30,13 +30,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         new FoodChart { Id = 2, InvoiceNo = "INV002", InvoiceDate = DateTime.Now, user = "User2", date = "2025-01-28", meal = "Meal2", nutrients = DateTime.Now, amount = 150.5f }
     };
 
-            // Mock the service to return paged results
-            var pagedResult = new PagedResult<FoodChart>(
-                currentPage: 1,
-                pageSize: 5,
-                rowCount: foodCharts.Count,
-                results: foodCharts
-            );
+            var pagedResult = new PagedResult<FoodChart> { Results = foodCharts };
 
             _foodChartServiceMock.Setup(service => service.List(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<FoodChartSearch>()))
                 .ReturnsAsync(pagedResult);

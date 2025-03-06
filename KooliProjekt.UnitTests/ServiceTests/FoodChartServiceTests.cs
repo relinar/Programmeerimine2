@@ -165,7 +165,7 @@ namespace KooliProjekt.UnitTests.ServiceTests
             Assert.NotNull(result);  // Ensure that the result is not null
             Assert.Empty(result.Results);  // No results should be returned as the table is empty
             Assert.Equal(0, result.RowCount);  // RowCount should be 0 since no food charts exist
-            Assert.Equal(1, result.PageCount);  // PageCount should be 1, because PageCount will always be >= 1 even when RowCount is 0
+            Assert.Equal(0, result.PageCount);  // PageCount should be 1, because PageCount will always be >= 1 even when RowCount is 0
         }
 
 

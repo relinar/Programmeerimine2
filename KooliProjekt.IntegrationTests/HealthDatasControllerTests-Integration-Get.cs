@@ -25,7 +25,7 @@ namespace KooliProjekt.IntegrationTests
             // Arrange
 
             // Act
-            using var response = await _client.GetAsync("/HealthData");
+            using var response = await _client.GetAsync("/HealthDatas");
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -49,7 +49,7 @@ namespace KooliProjekt.IntegrationTests
             // Arrange
 
             // Act
-            using var response = await _client.GetAsync("/HealthData/Details/");
+            using var response = await _client.GetAsync("/HealthDatas/Details/");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -64,7 +64,7 @@ namespace KooliProjekt.IntegrationTests
             _context.SaveChanges();
 
             // Act
-            using var response = await _client.GetAsync("/TodoLists/Details/" + list.Id);
+            using var response = await _client.GetAsync("/HealthDatas/Details/" + list.Id);
 
             // Assert
             response.EnsureSuccessStatusCode();

@@ -33,18 +33,17 @@ namespace KooliProjekt.UnitTests.ControllerTests
                 Name = "Test Nutrient",
                 Sugars = "5"
             };
-
+            var nutrients = new List<Nutrients>
+            {
+                new Nutrients { Id = 1, Name = "Protein" },
+                new Nutrients { Id = 2, Name = "Carbohydrates" }
+            };
             // Create PagedResult with mock nutrients data
-            var pagedResult = new PagedResult<Nutrients>(
-                currentPage: 1,
-                pageSize: 10,
-                rowCount: 2,
-                results: new List<Nutrients>
-                {
-            new Nutrients { Id = 1, Name = "Protein" },
-            new Nutrients { Id = 2, Name = "Carbohydrates" }
-                }
-            );
+            var pagedResult = new PagedResult<Nutrients> 
+            { 
+                Results = nutrients,
+                RowCount = nutrients.Count
+            };
 
             // Mock the service to return the prepared PagedResult
             _nutrientsServiceMock.Setup(service => service.List(1, 10, search))

@@ -42,11 +42,7 @@ namespace KooliProjekt.Services
                 query = query.Where(n => n.Sugars == sugars);
             }
 
-            // Pagination logic
-            var totalRows = await query.CountAsync();
-            var results = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-
-            return new PagedResult<Nutrients>(page, pageSize, totalRows, results);
+            return await query.GetPagedAsync(page, pageSize);
         }
 
         // Add a new nutrient

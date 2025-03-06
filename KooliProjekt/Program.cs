@@ -24,6 +24,8 @@ namespace KooliProjekt
             builder.Services.AddScoped<IFoodChartService, FoodChartService>();
             builder.Services.AddScoped<INutrientsService, NutrientsService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IHealthDataService, HealthDataService>();
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowSpecificOrigin", builder =>

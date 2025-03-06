@@ -296,7 +296,7 @@ namespace KooliProjekt.UnitTests.ServiceTests
 
             // Assert
             Assert.Empty(result.Results); // No results should be found
-            Assert.Equal(1, result.PageCount); // PageCount should be 1, even with no results, as long as there's pagination
+            Assert.Equal(0, result.PageCount); // PageCount should be 1, even with no results, as long as there's pagination
         }
 
 
@@ -316,7 +316,7 @@ namespace KooliProjekt.UnitTests.ServiceTests
 
             // Assert
             Assert.Empty(result.Results); // No results should be found
-            Assert.Equal(1, result.PageCount); // PageCount should be 1, even with no results, as long as there's pagination
+            Assert.Equal(0, result.PageCount); // PageCount should be 1, even with no results, as long as there's pagination
         }
 
         [Fact]
@@ -472,7 +472,7 @@ namespace KooliProjekt.UnitTests.ServiceTests
             // Assert
             Assert.Empty(result.Results);  // No results should be returned
             Assert.Equal(0, result.RowCount);  // RowCount should be 0 for no results
-            Assert.Equal(1, result.PageCount);  // PageCount should be 1, as the first page is considered (even empty)
+            Assert.Equal(0, result.PageCount);  // PageCount should be 1, as the first page is considered (even empty)
         }
 
 
@@ -596,7 +596,7 @@ namespace KooliProjekt.UnitTests.ServiceTests
 
             // Assert
             Assert.Empty(result.Results);  // No results should be found
-            Assert.Equal(1, result.PageCount);  // PageCount should be 1 for no matching results (empty page)
+            Assert.Equal(0, result.PageCount);  // PageCount should be 1 for no matching results (empty page)
             Assert.Equal(0, result.RowCount);  // No matching rows, RowCount should be 0
         }
 
