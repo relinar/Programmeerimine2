@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -88,39 +89,40 @@ namespace KooliProjekt.IntegrationTests
         [Fact]
         public async Task Create_should_save_new_list()
         {
-            // Arrange: Set up form values
+            // Arrange
             var formValues = new Dictionary<string, string>
-{
-    { "UserId", "1" },       // Ensure a valid UserId (assuming 1 exists)
-    { "User", "TestUser" },  // Example user name
-    { "Date", "2025-03-06" }, // Example date format
-    { "BloodSugar", "5.5" },  // Sample float value
-    { "Weight", "70.0" },     // Sample weight
-    { "BloodAir", "98%" },    // Sample blood oxygen level
-    { "Systolic", "120" },    // Sample systolic pressure
-    { "Diastolic", "80" },    // Sample diastolic pressure
-    { "Pulse", "72" },        // Sample pulse
-    { "Height", "175" },      // Example height
-    { "Age", "30" },          // Example age
-    { "Title", "Test Entry" } // Ensure Title is provided
-};
-
+    {
+        { "UserId", "1" }, // Ensure UserId exists in database
+        { "User", "TestUser" },
+        { "Date", "2025-03-06" },
+        { "BloodSugar", "5.5" },
+        { "Weight", "70.0" },
+        { "BloodAir", "98%" },
+        { "Systolic", "120" },
+        { "Diastolic", "80" },
+        { "Pulse", "72" },
+        { "Height", "175" },
+        { "Age", "30" },
+        { "Title", "Test Entry" }
+    };
             using var content = new FormUrlEncodedContent(formValues);
 
-            // Act: Submit form data to the controller
+            // Act
             using var response = await _client.PostAsync("/HealthDatas/Create", content);
 
-            // Assert: Check if the response status is a redirection (302)
-            Assert.True(
-                response.StatusCode == HttpStatusCode.Redirect ||
-                response.StatusCode == HttpStatusCode.MovedPermanently);
+            // Log response for debugging
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Response: {response.StatusCode}, Content: {responseContent}");
 
-            // Assert: Check if the Amount entity was created
-            var amount = _context.amount.FirstOrDefault();  // Query the Amount entity table
-            Assert.NotNull(amount);  // Assert that the Amount entity exists
-            Assert.NotEqual(0, amount.AmountID);  // Ensure AmountID is not 0
-            Assert.Equal("Test", amount.AmountTitle);  // Ensure AmountTitle is set
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+
+            // Verify database entry
+            var healthData = _context.health_data.FirstOrDefault();
+            Assert.NotNull(healthData);
+            Assert.Equal("Test Entry", healthData.Title);
         }
+
 
 
         [Fact]
