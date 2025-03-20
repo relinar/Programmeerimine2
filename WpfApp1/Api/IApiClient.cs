@@ -1,5 +1,4 @@
-﻿
-namespace WpfApp1.Api
+﻿namespace WpfApp1.Api
 {
     public interface IApiClient
     {

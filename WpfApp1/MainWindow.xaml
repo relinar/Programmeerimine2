@@ -8,8 +8,10 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="400"></ColumnDefinition>
-            <ColumnDefinition Width="400"></ColumnDefinition>
+            <ColumnDefinition Width="305"></ColumnDefinition>
+            <ColumnDefinition Width="95"/>
+            <ColumnDefinition Width="388.242"></ColumnDefinition>
+            <ColumnDefinition Width="11.758"/>
         </Grid.ColumnDefinitions>
 
         <DataGrid 
@@ -17,13 +19,13 @@
             Grid.Column="0"
             ItemsSource="{Binding Lists}"
             SelectedItem="{Binding SelectedItem}"
-            d:ItemsSource="{d:SampleData ItemCount=10}"/>
+            d:ItemsSource="{d:SampleData ItemCount=10}" Grid.ColumnSpan="2"/>
 
         <StackPanel
-            Margin="10"
-            Grid.Column="1">
+            Margin="10,10,10,10"
+            Grid.Column="2" Grid.ColumnSpan="2">
             <TextBlock>ID</TextBlock>
-            <TextBlock Text="{Binding SelectedItem.Id}"></TextBlock>
+            <TextBox Text="{Binding SelectedItem.Id, UpdateSourceTrigger=PropertyChanged}" TextChanged="TextBox_TextChanged"></TextBox>
 
             <TextBlock>Title</TextBlock>
             <TextBox Text="{Binding SelectedItem.Title, UpdateSourceTrigger=PropertyChanged}" TextChanged="TextBox_TextChanged"></TextBox>

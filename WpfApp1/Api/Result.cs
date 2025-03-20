@@ -4,12 +4,6 @@
     {
         public string Error { get; set; }
 
-        public bool HasError
-        {
-            get
-            {
-                return !string.IsNullOrEmpty(Error);
-            }
-        }
+        public bool HasError => !string.IsNullOrEmpty(Error);
     }
 }
