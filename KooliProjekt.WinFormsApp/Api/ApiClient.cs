@@ -19,17 +19,51 @@ namespace KooliProjekt.WinFormsApp.Api
 
             try
             {
-                result.Value = await _httpClient.GetFromJsonAsync<List<Amount>>("Amounts");
-            }
-            catch (HttpRequestException ex)
-            {
-                if (ex.HttpRequestError == HttpRequestError.ConnectionError)
+                var response = await _httpClient.GetAsync("Amounts");
+
+                if (response.IsSuccessStatusCode)
                 {
-                    result.Error = "Ei saa serveriga ühendust. Palun proovi hiljem uuesti.";
+                    result.Value = await response.Content.ReadFromJsonAsync<List<Amount>>();
                 }
                 else
                 {
-                    result.Error = ex.Message;
+                    result.Error = $"Serveri viga: {response.StatusCode}";
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                result.Error = ex.Message.Contains("Connection")
+                    ? "Ei saa serveriga ühendust. Palun proovi hiljem uuesti."
+                    : ex.Message;
+            }
+            catch (Exception ex)
+            {
+                result.Error = ex.Message;
+            }
+
+            return result;
+        }
+
+        public async Task<Result<bool>> Save(Amount amount)
+        {
+            var result = new Result<bool>();
+
+            try
+            {
+                HttpResponseMessage response;
+                if (amount.AmountID == 0)
+                {
+                    response = await _httpClient.PostAsJsonAsync("Amounts", amount);
+                }
+                else
+                {
+                    response = await _httpClient.PutAsJsonAsync($"Amounts/{amount.AmountID}", amount);
+                }
+
+                result.Value = response.IsSuccessStatusCode;
+                if (!response.IsSuccessStatusCode)
+                {
+                    result.Error = $"Salvestamine ebaõnnestus: {response.StatusCode}";
                 }
             }
             catch (Exception ex)
@@ -40,21 +74,26 @@ namespace KooliProjekt.WinFormsApp.Api
             return result;
         }
 
-        public async Task Save(Amount list)
+        public async Task<Result<bool>> Delete(int id)
         {
-            if(list.Id == 0)
-            {
-                await _httpClient.PostAsJsonAsync("Amounts", list);
-            }
-            else
-            {
-                await _httpClient.PutAsJsonAsync("Amounts/" + list.Id, list);
-            }
-        }
+            var result = new Result<bool>();
 
-        public async Task Delete(int id)
-        {
-            await _httpClient.DeleteAsync("Amounts/" + id);
+            try
+            {
+                var response = await _httpClient.DeleteAsync($"Amounts/{id}");
+
+                result.Value = response.IsSuccessStatusCode;
+                if (!response.IsSuccessStatusCode)
+                {
+                    result.Error = $"Kustutamine ebaõnnestus: {response.StatusCode}";
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Error = ex.Message;
+            }
+
+            return result;
         }
     }
 }

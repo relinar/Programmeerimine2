@@ -1,4 +1,3 @@
-
 using KooliProjekt.WinFormsApp.Api;
 
 namespace KooliProjekt.WinFormsApp
@@ -9,64 +8,107 @@ namespace KooliProjekt.WinFormsApp
         {
             InitializeComponent();
 
-            TodoListsGrid.SelectionChanged += TodoListsGrid_SelectionChanged;
+            AmountGrid.SelectionChanged += AmountGrid_SelectionChanged;
 
             NewButton.Click += NewButton_Click;
             SaveButton.Click += SaveButton_Click;
             DeleteButton.Click += DeleteButton_Click;
         }
 
-        private void DeleteButton_Click(object? sender, EventArgs e)
+        private async void DeleteButton_Click(object? sender, EventArgs e)
         {
             // Küsi kustutamise kinnitust
-            // Kui vastus oli "Yes", siis kustuta element ja lae andmed uuesti
+            var result = MessageBox.Show("Kas olete kindel, et soovite kustutada?", "Kustutamine", MessageBoxButtons.YesNo);
+            if (result == DialogResult.Yes)
+            {
+                if (int.TryParse(IdField.Text, out int id))
+                {
+                    var apiClient = new ApiClient();
+                    var deleteResult = await apiClient.Delete(id);
+                    if (deleteResult.Value)
+                    {
+                        MessageBox.Show("Kustutamine õnnestus!");
+                        await LoadData(); // Lae andmed uuesti
+                    }
+                    else
+                    {
+                        MessageBox.Show("Kustutamine ebaõnnestus: " + deleteResult.Error);
+                    }
+                }
+            }
         }
 
-        private void SaveButton_Click(object? sender, EventArgs e)
+        private async void SaveButton_Click(object? sender, EventArgs e)
         {
-            // Kontrolli ID-d:
-            //  - kui IDField on tühi või 0, siis tee uus objekt
-            //  - kui IDField ei ole tühi, siis küsi käesolev objekt gridi käest
-            // Salvesta API kaudu
-            // Lae andmed API-st uuesti
+            if (int.TryParse(IdField.Text, out int id) && !string.IsNullOrEmpty(TitleField.Text))
+            {
+                var amount = new Amount
+                {
+                    AmountID = id,
+                    AmountDate = DateTime.Parse(TitleField.Text)
+                };
+
+                var apiClient = new ApiClient();
+                var result = await apiClient.Save(amount);
+                if (result.Value)
+                {
+                    MessageBox.Show("Salvestamine õnnestus!");
+                    await LoadData(); // Lae andmed uuesti
+                }
+                else
+                {
+                    MessageBox.Show("Salvestamine ebaõnnestus: " + result.Error);
+                }
+            }
         }
 
         private void NewButton_Click(object? sender, EventArgs e)
         {
-            // Tühjenda väljad
+            IdField.Clear();
+            TitleField.Clear();
         }
 
-        private void TodoListsGrid_SelectionChanged(object? sender, EventArgs e)
+        private void AmountGrid_SelectionChanged(object? sender, EventArgs e)
         {
-            if (TodoListsGrid.SelectedRows.Count == 0)
+            if (AmountGrid.SelectedRows.Count == 0)
             {
                 return;
             }
 
-            var todoList = (Amount)TodoListsGrid.SelectedRows[0].DataBoundItem;
+            var selectedAmount = (Amount)AmountGrid.SelectedRows[0].DataBoundItem;
 
-            if(todoList == null)
+            if (selectedAmount == null)
             {
-                IdField.Text = string.Empty;
-                TitleField.Text = string.Empty;
+                IdField.Clear();
+                TitleField.Clear();
             }
             else
             {
-                IdField.Text = todoList.Id.ToString();
-                TitleField.Text = todoList.Title;
+                IdField.Text = selectedAmount.AmountID.ToString();
+                TitleField.Text = selectedAmount.AmountDate.ToString();
+            }
+        }
+
+        private async Task LoadData()
+        {
+            var apiClient = new ApiClient();
+            var result = await apiClient.List();
+
+            if (result.Value != null)
+            {
+                AmountGrid.DataSource = result.Value;
+                AmountGrid.AutoGenerateColumns = true;
+            }
+            else
+            {
+                MessageBox.Show("Andmete laadimine ebaõnnestus: " + result.Error, "Viga", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         protected override async void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-
-            var apiClient = new ApiClient();
-            var response = await apiClient.List();
-
-            TodoListsGrid.AutoGenerateColumns = true;
-            TodoListsGrid.DataSource = response.Value;
-            
+            await LoadData(); // Lae andmed esmakordselt
         }
     }
 }

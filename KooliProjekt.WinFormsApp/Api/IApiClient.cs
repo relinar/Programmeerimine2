@@ -3,7 +3,7 @@
     public interface IApiClient
     {
         Task<Result<List<Amount>>> List();
-        Task Save(Amount list);
-        Task Delete(int id);
+        Task<Result<bool>> Save(Amount list);  // Muudetud tagastustüüp
+        Task<Result<bool>> Delete(int id);    // Muudetud tagastustüüp
     }
 }
