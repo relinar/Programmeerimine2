@@ -1,114 +1,143 @@
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 using KooliProjekt.WinFormsApp.Api;
 
 namespace KooliProjekt.WinFormsApp
 {
     public partial class Form1 : Form
     {
+        // List to hold Amount objects
+        private List<Amount> amountsList = new List<Amount>();
+        private IApiClient apiClient = new ApiClient();
+
+        private int currentAmountID = 1; // Ensuring unique IDs for each Amount
+
         public Form1()
         {
             InitializeComponent();
+            LoadData();  // Call LoadData when the form is initialized
 
-            AmountGrid.SelectionChanged += AmountGrid_SelectionChanged;
-
-            NewButton.Click += NewButton_Click;
-            SaveButton.Click += SaveButton_Click;
-            DeleteButton.Click += DeleteButton_Click;
+            Load += Form1_Load;
         }
 
-        private async void DeleteButton_Click(object? sender, EventArgs e)
+        private async void Form1_Load(object? sender, EventArgs e)
         {
-            // Küsi kustutamise kinnitust
-            var result = MessageBox.Show("Kas olete kindel, et soovite kustutada?", "Kustutamine", MessageBoxButtons.YesNo);
-            if (result == DialogResult.Yes)
+            var result = await apiClient.List();
+
+            AmountGrid.DataSource = result.Value;
+        }
+
+        // Method to load data and bind it to the DataGridView
+        private void LoadData()
+        {
+            // Debugging: Check if the amountsList has data
+            Console.WriteLine("Loading data...");
+            foreach (var amount in amountsList)
             {
-                if (int.TryParse(IdField.Text, out int id))
-                {
-                    var apiClient = new ApiClient();
-                    var deleteResult = await apiClient.Delete(id);
-                    if (deleteResult.Value)
-                    {
-                        MessageBox.Show("Kustutamine õnnestus!");
-                        await LoadData(); // Lae andmed uuesti
-                    }
-                    else
-                    {
-                        MessageBox.Show("Kustutamine ebaõnnestus: " + deleteResult.Error);
-                    }
-                }
+                Console.WriteLine($"AmountID: {amount.AmountID}, NutrientsID: {amount.NutrientsID}, Title: {amount.AmountTitle}, Date: {amount.AmountDate}");
             }
+
+            // Set the data source for the DataGridView
+            AmountGrid.DataSource = null;  // Clear previous data
+            AmountGrid.DataSource = amountsList; // Bind new data
+
+            // Set column headers for clarity (optional)
+            AmountGrid.Columns["AmountID"].HeaderText = "Amount ID";
+            AmountGrid.Columns["NutrientsID"].HeaderText = "Nutrients ID";
+            AmountGrid.Columns["AmountDate"].HeaderText = "Amount Date";
+            AmountGrid.Columns["AmountTitle"].HeaderText = "Amount Title";
+
+            // Debugging: Confirm DataGridView refresh
+            Console.WriteLine("DataGrid bound successfully.");
         }
 
-        private async void SaveButton_Click(object? sender, EventArgs e)
+        // Button event for "New"
+        private void NewButton_Click(object sender, EventArgs e)
         {
-            if (int.TryParse(IdField.Text, out int id) && !string.IsNullOrEmpty(TitleField.Text))
-            {
-                var amount = new Amount
-                {
-                    AmountID = id,
-                    AmountDate = DateTime.Parse(TitleField.Text)
-                };
-
-                var apiClient = new ApiClient();
-                var result = await apiClient.Save(amount);
-                if (result.Value)
-                {
-                    MessageBox.Show("Salvestamine õnnestus!");
-                    await LoadData(); // Lae andmed uuesti
-                }
-                else
-                {
-                    MessageBox.Show("Salvestamine ebaõnnestus: " + result.Error);
-                }
-            }
-        }
-
-        private void NewButton_Click(object? sender, EventArgs e)
-        {
+            // Clear all input fields when the "New" button is clicked
             IdField.Clear();
+            NutrientsField.Clear();
             TitleField.Clear();
+            DateField.Value = DateTime.Now; // Set default date to current date
         }
 
-        private void AmountGrid_SelectionChanged(object? sender, EventArgs e)
+        // Button event for "Save"
+        private void SaveButton_Click(object sender, EventArgs e)
         {
-            if (AmountGrid.SelectedRows.Count == 0)
+            // Check if all fields are filled in
+            if (string.IsNullOrWhiteSpace(NutrientsField.Text) || string.IsNullOrWhiteSpace(TitleField.Text))
             {
+                MessageBox.Show("Please fill all fields.");
                 return;
             }
 
-            var selectedAmount = (Amount)AmountGrid.SelectedRows[0].DataBoundItem;
-
-            if (selectedAmount == null)
+            // Create a new Amount object with the current data from the fields
+            var newAmount = new Amount
             {
-                IdField.Clear();
-                TitleField.Clear();
+                AmountID = currentAmountID++,  // Increment ID for each new entry
+                NutrientsID = int.Parse(NutrientsField.Text),  // Convert NutrientsID to integer
+                AmountDate = DateField.Value,  // Get selected date
+                AmountTitle = TitleField.Text  // Get entered title
+            };
+
+            // Debugging: Output the new amount to confirm it's correct
+            Console.WriteLine($"New Amount Added: ID = {newAmount.AmountID}, NutrientsID = {newAmount.NutrientsID}, Title = {newAmount.AmountTitle}, Date = {newAmount.AmountDate}");
+
+            // Add the new Amount object to the list
+            amountsList.Add(newAmount);
+
+            // Reload data to update the DataGridView
+            LoadData();
+
+            // Clear fields after saving
+            IdField.Clear();
+            NutrientsField.Clear();
+            TitleField.Clear();
+            DateField.Value = DateTime.Now;
+
+            // Optional: Show confirmation message
+            MessageBox.Show("Data saved successfully!");
+        }
+
+        // Button event for "Delete"
+        private void DeleteButton_Click(object sender, EventArgs e)
+        {
+            // Logic to delete the selected row from the grid
+            if (AmountGrid.SelectedRows.Count > 0)
+            {
+                // Get the selected row's AmountID
+                var selectedRow = AmountGrid.SelectedRows[0];
+                var selectedAmountID = (int)selectedRow.Cells["AmountID"].Value;
+
+                // Find the object in the list that matches the AmountID and remove it
+                var amountToDelete = amountsList.Find(a => a.AmountID == selectedAmountID);
+                if (amountToDelete != null)
+                {
+                    amountsList.Remove(amountToDelete);
+                    LoadData();  // Refresh the grid after deletion
+                    MessageBox.Show("Amount deleted successfully!");
+                }
             }
             else
             {
-                IdField.Text = selectedAmount.AmountID.ToString();
-                TitleField.Text = selectedAmount.AmountDate.ToString();
+                MessageBox.Show("Please select an amount to delete.");
             }
-        }
 
-        private async Task LoadData()
-        {
-            var apiClient = new ApiClient();
-            var result = await apiClient.List();
-
-            if (result.Value != null)
-            {
-                AmountGrid.DataSource = result.Value;
-                AmountGrid.AutoGenerateColumns = true;
-            }
-            else
-            {
-                MessageBox.Show("Andmete laadimine ebaõnnestus: " + result.Error, "Viga", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            // Clear the fields after deletion
+            IdField.Clear();
+            NutrientsField.Clear();
+            TitleField.Clear();
+            DateField.Value = DateTime.Now;
         }
+    }
 
-        protected override async void OnLoad(EventArgs e)
-        {
-            base.OnLoad(e);
-            await LoadData(); // Lae andmed esmakordselt
-        }
+    // Class to represent Amount
+    public class Amount
+    {
+        public int AmountID { get; set; }
+        public int NutrientsID { get; set; }
+        public DateTime AmountDate { get; set; }
+        public string AmountTitle { get; set; }
     }
 }
