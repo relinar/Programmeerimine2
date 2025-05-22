@@ -1,7 +1,8 @@
 ﻿using System.Collections.ObjectModel;
+using System.Net.Http;
 using System.Windows.Input;
+using KooliProjekt.PublicAPI;
 using KooliProjekt.WpfApp1;
-using WpfApp1.Api;
 
 namespace WpfApp1
 {
@@ -16,7 +17,7 @@ namespace WpfApp1
 
         private readonly IApiClient _apiClient;
 
-        public MainWindowViewModel() : this(new ApiClient())
+        public MainWindowViewModel() : this(new ApiClient(new HttpClient()))
         {
         }
 
@@ -61,7 +62,7 @@ namespace WpfApp1
                         }
                     }
 
-                    await _apiClient.Delete(SelectedItem.Id);
+                    await _apiClient.Delete(SelectedItem.AmountID);
                     Lists.Remove(SelectedItem);
                     SelectedItem = null;
                 },
@@ -83,7 +84,7 @@ namespace WpfApp1
             {
                 if (OnError != null)
                 {
-                    OnError(lists.Error);
+                    OnError(lists.ErrorMessage);
                 }
 
                 return;

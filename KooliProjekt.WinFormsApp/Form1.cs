@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using KooliProjekt.WinFormsApp.Api;
+using KooliProjekt.PublicAPI;
 
 namespace KooliProjekt.WinFormsApp
 {
@@ -12,7 +12,7 @@ namespace KooliProjekt.WinFormsApp
 
         public IAmountView AmountView => this;
 
-        public IList<Amount> Amount
+        public List<Amount> Amount
         {
             get => amountsList;
             set
@@ -74,7 +74,7 @@ namespace KooliProjekt.WinFormsApp
 
         public AmountPresenter Presenter { get; set; }
 
-        private readonly IApiClient apiClient = new ApiClient();
+        private readonly IApiClient apiClient = new ApiClient(new HttpClient());
 
         public Form1()
         {

@@ -1,4 +1,4 @@
-using KooliProjekt.WinFormsApp.Api;
+using KooliProjekt.PublicAPI;
 
 namespace KooliProjekt.WinFormsApp
 {
@@ -15,7 +15,7 @@ namespace KooliProjekt.WinFormsApp
             ApplicationConfiguration.Initialize();
 
             var form = new Form1();
-            var apiClient = new ApiClient();
+            var apiClient = new ApiClient(new HttpClient());
             var presenter = new AmountPresenter(form, apiClient);
             Application.Run(form);
         }

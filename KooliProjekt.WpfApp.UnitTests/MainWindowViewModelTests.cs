@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Moq;
 using WpfApp1;
-using WpfApp1.Api;
+using KooliProjekt.PublicAPI;
 
 namespace KooliProjekt.WpfApp1.UnitTests
 {
@@ -19,8 +19,8 @@ namespace KooliProjekt.WpfApp1.UnitTests
                 {
                     Value = new List<Amount>
                     {
-                        new Amount { Id = 1, Title = "Item 1" },
-                        new Amount { Id = 2, Title = "Item 2" }
+                        new Amount { AmountID = 1, AmountTitle = "Item 1" },
+                        new Amount { AmountID = 2, AmountTitle = "Item 2" }
                     }
                 });
 
@@ -31,8 +31,8 @@ namespace KooliProjekt.WpfApp1.UnitTests
 
             // Assert
             Assert.Equal(2, viewModel.Lists.Count);
-            Assert.Equal("Item 1", viewModel.Lists[0].Title);
-            Assert.Equal("Item 2", viewModel.Lists[1].Title);
+            Assert.Equal("Item 1", viewModel.Lists[0].AmountTitle);
+            Assert.Equal("Item 2", viewModel.Lists[1].AmountTitle);
         }
 
         [Fact]
@@ -74,10 +74,11 @@ namespace KooliProjekt.WpfApp1.UnitTests
         {
             // Arrange
             var mockApiClient = new Mock<IApiClient>();
-            mockApiClient.Setup(client => client.Delete(It.IsAny<int>())).Returns(Task.CompletedTask);
+            var result = new Result();
+            mockApiClient.Setup(client => client.Delete(It.IsAny<int>())).ReturnsAsync(result);
             var viewModel = new MainWindowViewModel(mockApiClient.Object)
             {
-                SelectedItem = new Amount { Id = 1 }
+                SelectedItem = new Amount { AmountID = 1 }
             };
 
             // Act

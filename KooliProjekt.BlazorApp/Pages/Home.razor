@@ -1,0 +1,56 @@
+﻿@page "/"
+@inject IApiClient ApiClient
+
+<h3>Amounts from API</h3>
+
+@if (amounts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (errorMessage != null)
+{
+    <p class="text-danger">@errorMessage</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>NutrientsID</th>
+                <th>Date</th>
+                <th>Title</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var amount in amounts)
+            {
+                <tr>
+                    <td>@amount.AmountID</td>
+                    <td>@amount.NutrientsID</td>
+                    <td>@amount.AmountDate.ToShortDateString()</td>
+                    <td>@amount.AmountTitle</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Amount>? amounts;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await ApiClient.List();
+
+        if (!result.HasError && result.Value != null)
+        {
+            amounts = result.Value;
+        }
+        else
+        {
+            errorMessage = result.ErrorMessage ?? "Unknown error occurred";
+        }
+    }
+}

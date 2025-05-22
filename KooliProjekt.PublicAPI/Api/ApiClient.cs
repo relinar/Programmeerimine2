@@ -1,16 +1,18 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 
-namespace KooliProjekt.WinFormsApp.Api
+namespace KooliProjekt.PublicAPI
 {
     public class ApiClient : IApiClient
     {
         private readonly HttpClient _httpClient;
 
-        public ApiClient()
+        public ApiClient(HttpClient httpClient)
         {
-            _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri("https://localhost:7136/api/");
+            _httpClient = httpClient;
         }
 
         public async Task<Result<List<Amount>>> List()
@@ -27,26 +29,20 @@ namespace KooliProjekt.WinFormsApp.Api
                 }
                 else
                 {
-                    result.Error = $"Serveri viga: {response.StatusCode}";
+                    result.ErrorMessage = $"Server error: {response.StatusCode}";
                 }
-            }
-            catch (HttpRequestException ex)
-            {
-                result.Error = ex.Message.Contains("Connection")
-                    ? "Ei saa serveriga ühendust. Palun proovi hiljem uuesti."
-                    : ex.Message;
             }
             catch (Exception ex)
             {
-                result.Error = ex.Message;
+                result.ErrorMessage = ex.Message;
             }
 
             return result;
         }
 
-        public async Task<Result<bool>> Save(Amount amount)
+        public async Task<Result> Save(Amount amount)
         {
-            var result = new Result<bool>();
+            var result = new Result();
 
             try
             {
@@ -60,37 +56,35 @@ namespace KooliProjekt.WinFormsApp.Api
                     response = await _httpClient.PutAsJsonAsync($"Amounts/{amount.AmountID}", amount);
                 }
 
-                result.Value = response.IsSuccessStatusCode;
                 if (!response.IsSuccessStatusCode)
                 {
-                    result.Error = $"Salvestamine ebaõnnestus: {response.StatusCode}";
+                    result.ErrorMessage = $"Save failed: {response.StatusCode}";
                 }
             }
             catch (Exception ex)
             {
-                result.Error = ex.Message;
+                result.ErrorMessage = ex.Message;
             }
 
             return result;
         }
 
-        public async Task<Result<bool>> Delete(int id)
+        public async Task<Result> Delete(int id)
         {
-            var result = new Result<bool>();
+            var result = new Result();
 
             try
             {
                 var response = await _httpClient.DeleteAsync($"Amounts/{id}");
 
-                result.Value = response.IsSuccessStatusCode;
                 if (!response.IsSuccessStatusCode)
                 {
-                    result.Error = $"Kustutamine ebaõnnestus: {response.StatusCode}";
+                    result.ErrorMessage = $"Delete failed: {response.StatusCode}";
                 }
             }
             catch (Exception ex)
             {
-                result.Error = ex.Message;
+                result.ErrorMessage = ex.Message;
             }
 
             return result;

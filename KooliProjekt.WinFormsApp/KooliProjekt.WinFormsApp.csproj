@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\KooliProjekt.PublicAPI\KooliProjekt.PublicAPI.csproj" />
     <ProjectReference Include="..\WpfApp1\WpfApp1.csproj" />
   </ItemGroup>
 

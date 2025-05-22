@@ -1,11 +1,12 @@
-﻿namespace KooliProjekt.WinFormsApp
+﻿using System.Collections.Generic;
+
+namespace KooliProjekt.WinFormsApp
 {
     public interface IAmountView
     {
-        IList<Amount> Amount { get; set; }
-        Amount SelectedItem { get; set; }
-        string Title { get; set; }
+        List<Amount> Amount { get; set; }
         int Id { get; set; }
-        AmountPresenter Presenter { get; set; }
+        string Title { get; set; }
+        Amount? SelectedItem { get; set; }
     }
 }
