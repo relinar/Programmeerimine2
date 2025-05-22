@@ -5,134 +5,146 @@ using KooliProjekt.WinFormsApp.Api;
 
 namespace KooliProjekt.WinFormsApp
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form, IAmountView
     {
-        // List to hold Amount objects
         private List<Amount> amountsList = new List<Amount>();
-        private IApiClient apiClient = new ApiClient();
+        private int currentAmountID = 1;
 
-        private int currentAmountID = 1; // Ensuring unique IDs for each Amount
+        public IAmountView AmountView => this;
+
+        public IList<Amount> Amount
+        {
+            get => amountsList;
+            set
+            {
+                amountsList = value != null ? new List<Amount>(value) : new List<Amount>();
+                AmountGrid.DataSource = null;
+                AmountGrid.DataSource = amountsList;
+
+                AmountGrid.Columns["AmountID"].HeaderText = "Amount ID";
+                AmountGrid.Columns["NutrientsID"].HeaderText = "Nutrients ID";
+                AmountGrid.Columns["AmountDate"].HeaderText = "Amount Date";
+                AmountGrid.Columns["AmountTitle"].HeaderText = "Amount Title";
+            }
+        }
+
+        public Amount SelectedItem
+        {
+            get
+            {
+                if (AmountGrid.CurrentRow == null)
+                    return null;
+
+                return AmountGrid.CurrentRow.DataBoundItem as Amount;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    IdField.Text = "";
+                    NutrientsField.Text = "";
+                    TitleField.Text = "";
+                    DateField.Value = DateTime.Now;
+                    return;
+                }
+
+                IdField.Text = value.AmountID.ToString();
+                NutrientsField.Text = value.NutrientsID.ToString();
+                TitleField.Text = value.AmountTitle;
+                DateField.Value = value.AmountDate;
+            }
+        }
+
+        public string Title
+        {
+            get => TitleField.Text;
+            set => TitleField.Text = value;
+        }
+
+        public int Id
+        {
+            get
+            {
+                if (int.TryParse(IdField.Text, out int id))
+                    return id;
+                return 0;
+            }
+            set => IdField.Text = value.ToString();
+        }
+
+        public AmountPresenter Presenter { get; set; }
+
+        private readonly IApiClient apiClient = new ApiClient();
 
         public Form1()
         {
             InitializeComponent();
-            LoadData();  // Call LoadData when the form is initialized
 
-            Load += Form1_Load;
-        }
+            Presenter = new AmountPresenter(this, apiClient);
 
-        private async void Form1_Load(object? sender, EventArgs e)
-        {
-            var result = await apiClient.List();
-
-            AmountGrid.DataSource = result.Value;
-        }
-
-        // Method to load data and bind it to the DataGridView
-        private void LoadData()
-        {
-            // Debugging: Check if the amountsList has data
-            Console.WriteLine("Loading data...");
-            foreach (var amount in amountsList)
+            Load += async (s, e) =>
             {
-                Console.WriteLine($"AmountID: {amount.AmountID}, NutrientsID: {amount.NutrientsID}, Title: {amount.AmountTitle}, Date: {amount.AmountDate}");
-            }
+                await Presenter.Load();
+            };
 
-            // Set the data source for the DataGridView
-            AmountGrid.DataSource = null;  // Clear previous data
-            AmountGrid.DataSource = amountsList; // Bind new data
-
-            // Set column headers for clarity (optional)
-            AmountGrid.Columns["AmountID"].HeaderText = "Amount ID";
-            AmountGrid.Columns["NutrientsID"].HeaderText = "Nutrients ID";
-            AmountGrid.Columns["AmountDate"].HeaderText = "Amount Date";
-            AmountGrid.Columns["AmountTitle"].HeaderText = "Amount Title";
-
-            // Debugging: Confirm DataGridView refresh
-            Console.WriteLine("DataGrid bound successfully.");
+            AmountGrid.SelectionChanged += (s, e) =>
+            {
+                SelectedItem = AmountGrid.CurrentRow?.DataBoundItem as Amount;
+            };
         }
 
-        // Button event for "New"
         private void NewButton_Click(object sender, EventArgs e)
         {
-            // Clear all input fields when the "New" button is clicked
             IdField.Clear();
             NutrientsField.Clear();
             TitleField.Clear();
-            DateField.Value = DateTime.Now; // Set default date to current date
+            DateField.Value = DateTime.Now;
+            AmountGrid.ClearSelection();
         }
 
-        // Button event for "Save"
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            // Check if all fields are filled in
             if (string.IsNullOrWhiteSpace(NutrientsField.Text) || string.IsNullOrWhiteSpace(TitleField.Text))
             {
                 MessageBox.Show("Please fill all fields.");
                 return;
             }
 
-            // Create a new Amount object with the current data from the fields
+            if (!int.TryParse(NutrientsField.Text, out int nutrientsId))
+            {
+                MessageBox.Show("NutrientsID must be a number.");
+                return;
+            }
+
             var newAmount = new Amount
             {
-                AmountID = currentAmountID++,  // Increment ID for each new entry
-                NutrientsID = int.Parse(NutrientsField.Text),  // Convert NutrientsID to integer
-                AmountDate = DateField.Value,  // Get selected date
-                AmountTitle = TitleField.Text  // Get entered title
+                AmountID = currentAmountID++,
+                NutrientsID = nutrientsId,
+                AmountDate = DateField.Value,
+                AmountTitle = TitleField.Text
             };
 
-            // Debugging: Output the new amount to confirm it's correct
-            Console.WriteLine($"New Amount Added: ID = {newAmount.AmountID}, NutrientsID = {newAmount.NutrientsID}, Title = {newAmount.AmountTitle}, Date = {newAmount.AmountDate}");
+            Presenter.AddNewAmount(newAmount);
 
-            // Add the new Amount object to the list
-            amountsList.Add(newAmount);
-
-            // Reload data to update the DataGridView
-            LoadData();
-
-            // Clear fields after saving
-            IdField.Clear();
-            NutrientsField.Clear();
-            TitleField.Clear();
-            DateField.Value = DateTime.Now;
-
-            // Optional: Show confirmation message
             MessageBox.Show("Data saved successfully!");
         }
 
-        // Button event for "Delete"
         private void DeleteButton_Click(object sender, EventArgs e)
         {
-            // Logic to delete the selected row from the grid
-            if (AmountGrid.SelectedRows.Count > 0)
-            {
-                // Get the selected row's AmountID
-                var selectedRow = AmountGrid.SelectedRows[0];
-                var selectedAmountID = (int)selectedRow.Cells["AmountID"].Value;
-
-                // Find the object in the list that matches the AmountID and remove it
-                var amountToDelete = amountsList.Find(a => a.AmountID == selectedAmountID);
-                if (amountToDelete != null)
-                {
-                    amountsList.Remove(amountToDelete);
-                    LoadData();  // Refresh the grid after deletion
-                    MessageBox.Show("Amount deleted successfully!");
-                }
-            }
-            else
+            var toDelete = SelectedItem;
+            if (toDelete == null)
             {
                 MessageBox.Show("Please select an amount to delete.");
+                return;
             }
 
-            // Clear the fields after deletion
-            IdField.Clear();
-            NutrientsField.Clear();
-            TitleField.Clear();
-            DateField.Value = DateTime.Now;
+            Presenter.DeleteAmount(toDelete);
+            MessageBox.Show("Amount deleted successfully!");
+
+            NewButton_Click(sender, e);
         }
     }
 
-    // Class to represent Amount
     public class Amount
     {
         public int AmountID { get; set; }
