@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System;
 
 namespace KooliProjekt.PublicAPI
 {
@@ -17,77 +17,98 @@ namespace KooliProjekt.PublicAPI
 
         public async Task<Result<List<Amount>>> List()
         {
-            var result = new Result<List<Amount>>();
-
             try
             {
-                var response = await _httpClient.GetAsync("Amounts");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    result.Value = await response.Content.ReadFromJsonAsync<List<Amount>>();
-                }
-                else
-                {
-                    result.ErrorMessage = $"Server error: {response.StatusCode}";
-                }
+                var data = await _httpClient.GetFromJsonAsync<List<Amount>>("api/amounts");
+                return new Result<List<Amount>> { Value = data! };
+            }
+            catch (HttpRequestException httpEx)
+            {
+                return new Result<List<Amount>> { ErrorMessage = $"HTTP error: {httpEx.Message}" };
             }
             catch (Exception ex)
             {
-                result.ErrorMessage = ex.Message;
+                return new Result<List<Amount>> { ErrorMessage = $"Unexpected error: {ex.Message}" };
             }
-
-            return result;
         }
+
+        public async Task<Result<Amount>> Get(int id)
+        {
+            try
+            {
+                var data = await _httpClient.GetFromJsonAsync<Amount>($"api/amounts/{id}");
+                return new Result<Amount> { Value = data! };
+            }
+            catch (HttpRequestException httpEx)
+            {
+                return new Result<Amount> { ErrorMessage = $"HTTP error: {httpEx.Message}" };
+            }
+            catch (Exception ex)
+            {
+                return new Result<Amount> { ErrorMessage = $"Unexpected error: {ex.Message}" };
+            }
+        }
+
+
 
         public async Task<Result> Save(Amount amount)
         {
-            var result = new Result();
-
             try
             {
                 HttpResponseMessage response;
+
                 if (amount.AmountID == 0)
                 {
-                    response = await _httpClient.PostAsJsonAsync("Amounts", amount);
+                    // New item — use POST
+                    response = await _httpClient.PostAsJsonAsync("api/amounts", amount);
                 }
                 else
                 {
-                    response = await _httpClient.PutAsJsonAsync($"Amounts/{amount.AmountID}", amount);
+                    // Existing item — use PUT
+                    response = await _httpClient.PutAsJsonAsync($"api/amounts/{amount.AmountID}", amount);
                 }
 
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
                 {
-                    result.ErrorMessage = $"Save failed: {response.StatusCode}";
+                    return new Result();
                 }
+                else
+                {
+                    return new Result { ErrorMessage = $"Server returned {response.StatusCode}" };
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                return new Result { ErrorMessage = $"HTTP error: {httpEx.Message}" };
             }
             catch (Exception ex)
             {
-                result.ErrorMessage = ex.Message;
+                return new Result { ErrorMessage = $"Unexpected error: {ex.Message}" };
             }
-
-            return result;
         }
 
         public async Task<Result> Delete(int id)
         {
-            var result = new Result();
-
             try
             {
-                var response = await _httpClient.DeleteAsync($"Amounts/{id}");
-
-                if (!response.IsSuccessStatusCode)
+                var response = await _httpClient.DeleteAsync($"api/amounts/{id}");
+                if (response.IsSuccessStatusCode)
                 {
-                    result.ErrorMessage = $"Delete failed: {response.StatusCode}";
+                    return new Result();
                 }
+                else
+                {
+                    return new Result { ErrorMessage = $"Server returned {response.StatusCode}" };
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                return new Result { ErrorMessage = $"HTTP error: {httpEx.Message}" };
             }
             catch (Exception ex)
             {
-                result.ErrorMessage = ex.Message;
+                return new Result { ErrorMessage = $"Unexpected error: {ex.Message}" };
             }
-
-            return result;
         }
     }
 }

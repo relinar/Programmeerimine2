@@ -4,7 +4,7 @@ using KooliProjekt.PublicAPI;
 
 // Alias the Amount classes to avoid confusion
 using LocalAmount = KooliProjekt.WinFormsApp.Amount;
-using ApiAmount = KooliProjekt.WinFormsApp.Api.Amount;
+using ApiAmount = KooliProjekt.PublicAPI.Amount; // adjust this if the real namespace is different
 
 public class AmountPresenterTests
 {

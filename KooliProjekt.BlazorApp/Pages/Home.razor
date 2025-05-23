@@ -1,56 +1,41 @@
 ﻿@page "/"
-@inject IApiClient ApiClient
 
-<h3>Amounts from API</h3>
+<PageTitle>Amount</PageTitle>
 
-@if (amounts == null)
+<h1>Amount</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (Amount == null)
 {
     <p><em>Loading...</em></p>
 }
-else if (errorMessage != null)
-{
-    <p class="text-danger">@errorMessage</p>
-}
 else
 {
+    <p><a class="btn btn-primary" href="/create">Add new</a></p>
     <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>NutrientsID</th>
-                <th>Date</th>
+                <th>Amount ID</th>
                 <th>Title</th>
+                <th>Nutrients ID</th>
+                <th>Date</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var amount in amounts)
+            @foreach (var Amount in Amount)
             {
                 <tr>
-                    <td>@amount.AmountID</td>
-                    <td>@amount.NutrientsID</td>
-                    <td>@amount.AmountDate.ToShortDateString()</td>
-                    <td>@amount.AmountTitle</td>
+                    <td>@Amount.AmountID</td>
+                    <td>@Amount.AmountTitle</td>
+                    <td>@Amount.NutrientsID</td>
+                    <td>@Amount.AmountDate.ToShortDateString()</td>
+                    <td>
+                        <a href="/edit/@Amount.AmountID" class="btn btn-primary">Edit</a>
+                        <button class="btn btn-primary" @onclick="() => Delete(Amount.AmountID)">Delete</button>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
-}
-
-@code {
-    private List<Amount>? amounts;
-    private string? errorMessage;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var result = await ApiClient.List();
-
-        if (!result.HasError && result.Value != null)
-        {
-            amounts = result.Value;
-        }
-        else
-        {
-            errorMessage = result.ErrorMessage ?? "Unknown error occurred";
-        }
-    }
 }
